@@ -10,7 +10,10 @@ SOURCE_DIR = "C:\\Users\\User\\Documents\\Salt Slack export Oct 9 2017\\"  # TOD
 LOG_MODES = ("LOW", "MEDIUM", "HIGH")
 LOG_MODE = "MEDIUM"
 
-SUBTYPES_SIMPLE = ('channel_archive',
+SUBTYPES_SIMPLE = ('bot_add',
+                   'bot_message',
+                   'bot_remove',
+                   'channel_archive',
                    'channel_join',
                    'channel_leave',
                    'channel_name',
@@ -184,15 +187,15 @@ def exportChannelData(folder_loc: str, as_json=False):
         data = channel_data[channel]
         loc = folder_loc + "\\#" + channel
 
+        if (LOG_MODES.index(LOG_MODE) >= LOG_MODES.index("MEDIUM")):
+            print("Exporting '" + loc + "'")
+
         if (as_json):
             loc += ".json"
             data = json.dumps(data, indent=4)
         else:
             loc += ".txt"
             data = formatChannelJSON(data)
-
-        if (LOG_MODES.index(LOG_MODE) >= LOG_MODES.index("MEDIUM")):
-            print("Exporting '" + loc + "'")
 
         file = open(loc, "w", encoding="utf8")
         file.write(data)
@@ -239,13 +242,21 @@ def formatMessageJSON(msg):
 
     # Do stuff based on the subtype
     if subtype in SUBTYPES_SIMPLE:
-        ret += simplifyMarkup(msg['text'], include_ampersand=False) + "\n"
+        if not 'text' in msg:
+            ret += "WARNING: THIS IS STILL IN DEVELOPMENT AND NO TEXT COULD BE FOUND" # Should be fixed shortly
+        else:
+            ret += simplifyMarkup(msg['text'], include_ampersand=False) + "\n"
     elif 'text' in msg:
         ret += getUserName(msg) + ": " + simplifyMarkup(msg['text']) + "\n"
     else:
         print(subtype)
 
     return ret
+
+def getMsgContents(msg):
+    # If text is available (it sometimes might not be) then add it first
+    # If attachments exist then add them
+    pass
 
 def padInt(val: int, length=2):
     ret = str(val)
@@ -255,8 +266,8 @@ def padInt(val: int, length=2):
 
     return ret
 
-# Reduce mentions
 def simplifyMarkup(msg: str, include_ampersand=True):
+    # Make mentions readable
     mentions = re.finditer('<@U([^|>]+)>', msg)
 
     for match in mentions:
