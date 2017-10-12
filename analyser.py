@@ -3,11 +3,20 @@ import json
 import os
 import sys
 import datetime
+import re
 
 # CONSTANTS
-SOURCE_DIR = "C:\\Users\\User\\Documents\\Salt Slack export Oct 9 2017\\" # TODO change this
+SOURCE_DIR = "C:\\Users\\User\\Documents\\Salt Slack export Oct 9 2017\\"  # TODO change this
 LOG_MODES = ("LOW", "MEDIUM", "HIGH")
 LOG_MODE = "MEDIUM"
+
+SUBTYPES_SIMPLE = ('channel_archive',
+                   'channel_join',
+                   'channel_leave',
+                   'channel_name',
+                   'channel_purpose',
+                   'channel_topic',
+                   'channel_unarchive',)
 
 # VARS
 # Slack data
@@ -20,6 +29,7 @@ channel_data = {}
 last_date = None
 last_user = None
 
+
 # FUNCS
 # Loading
 def loadJSONFile(file):
@@ -28,7 +38,7 @@ def loadJSONFile(file):
     if (LOG_MODES.index(LOG_MODE) >= LOG_MODES.index("HIGH")):
         print("Reading '" + loc + "'")
 
-    file = open(loc , "r", encoding="utf8")
+    file = open(loc, "r", encoding="utf8")
     data = file.read()
     data = json.loads(data)
     file.close()
@@ -115,7 +125,6 @@ def calculateScores(users, channels):
                     user_scores[username] += file_user_scores[username]
                     channel_scores[channel] += file_user_scores[username]
 
-
     return user_scores, channel_scores
 
 def calculateFileScores(file_loc, users):
@@ -153,7 +162,7 @@ def printFinalStats(user_scores, channel_scores):
         percentage = round(percentage, 1)
 
         print("#" + i + "," + str(messages) + "," + str(percentage) + "%")
-        #print("#" + i + ":\t" + str(messages) + " (" + str(percentage) + "%)")
+        # print("#" + i + ":\t" + str(messages) + " (" + str(percentage) + "%)")
 
     print("\nUser Stats:")
     for i in sorted(user_scores.keys()):
@@ -162,10 +171,10 @@ def printFinalStats(user_scores, channel_scores):
         percentage = round(percentage, 1)
 
         print(i + "," + str(messages) + "," + str(percentage) + "%")
-        #print(i + ":\t" + str(messages) + " (" + str(percentage) + "%)")
+        # print(i + ":\t" + str(messages) + " (" + str(percentage) + "%)")
 
 # Exporting
-def exportChannelData(folder_loc: str, as_json = False):
+def exportChannelData(folder_loc: str, as_json=False):
     print("Exporting channel data to '" + folder_loc + "'")
 
     if not os.path.exists(folder_loc):
@@ -221,27 +230,52 @@ def formatMessageJSON(msg):
         ret += " -- " + str(date.day) + "/" + str(date.month) + "/" + str(date.year) + " -- \n"
         last_date = date
 
-    ret += padInt(time.hour) + ":" + padInt(time.minute) + " "
+    ret += "[" + padInt(time.hour) + ":" + padInt(time.minute) + "] "
 
     # Get subtype
     subtype = None
     if 'subtype' in msg:
         subtype = msg['subtype']
 
-    if 'text' in msg:
-        ret += getUserName(msg) + ": " + msg['text'] + "\n"
+    # Do stuff based on the subtype
+    if subtype in SUBTYPES_SIMPLE:
+        ret += simplifyMarkup(msg['text'], include_ampersand=False) + "\n"
+    elif 'text' in msg:
+        ret += getUserName(msg) + ": " + simplifyMarkup(msg['text']) + "\n"
     else:
         print(subtype)
 
     return ret
 
-def padInt(val: int, length = 2):
+def padInt(val: int, length=2):
     ret = str(val)
 
     while len(ret) < length:
         ret = "0" + ret
 
     return ret
+
+# Reduce mentions
+def simplifyMarkup(msg: str, include_ampersand=True):
+    mentions = re.finditer('<@U([^|>]+)>', msg)
+
+    for match in mentions:
+        new_text = ""
+        if include_ampersand:
+            new_text += "@"
+
+        ID = match.group()[2:-1]
+
+        if ID == 'SLACKBOT':
+            new_text += "Slackbot"
+        elif ID in users_map:
+            new_text += users_map[ID]
+        else:
+            new_text += ID
+
+        msg = msg.replace(match.group(), new_text)
+
+    return msg
 
 def getUserName(message):
     if 'user' in message:
@@ -282,5 +316,5 @@ def outputSubtypes():
 
 # START OF PROGRAM
 loadSlack()
-#outputSubtypes()
-exportChannelData("export_json", as_json=True)
+# outputSubtypes()
+exportChannelData("export")

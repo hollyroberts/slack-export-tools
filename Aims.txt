@@ -5,6 +5,7 @@ Generate statistics
 		Text/Reactions/Combined
 
 Export
+	Merge JSON into 1 file per channel
 	Generate a neater version
 		Organised by channel
 		Timestamped (UTC)
