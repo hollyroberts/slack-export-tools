@@ -165,15 +165,22 @@ def printFinalStats(user_scores, channel_scores):
         #print(i + ":\t" + str(messages) + " (" + str(percentage) + "%)")
 
 # Exporting
-def exportReadableData(folder_loc: str):
-    print("Exporting data to '" + folder_loc + "'")
+def exportChannelData(folder_loc: str, as_json = False):
+    print("Exporting channel data to '" + folder_loc + "'")
 
     if not os.path.exists(folder_loc):
         os.makedirs(folder_loc)
 
     for channel in channels:
-        data = formatChannelJSON(channel_data[channel])
-        loc = folder_loc + "\\#" + channel + ".txt"
+        data = channel_data[channel]
+        loc = folder_loc + "\\#" + channel
+
+        if (as_json):
+            loc += ".json"
+            data = json.dumps(data, indent=4)
+        else:
+            loc += ".txt"
+            data = formatChannelJSON(data)
 
         if (LOG_MODES.index(LOG_MODE) >= LOG_MODES.index("MEDIUM")):
             print("Exporting '" + loc + "'")
@@ -276,4 +283,4 @@ def outputSubtypes():
 # START OF PROGRAM
 loadSlack()
 #outputSubtypes()
-exportReadableData("export")
+exportChannelData("export_json", as_json=True)
