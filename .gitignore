@@ -1,4 +1,5 @@
 # Project ignores
+/clan
 /export
 /export_json
 TODO.txt

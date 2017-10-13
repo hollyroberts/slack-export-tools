@@ -6,9 +6,8 @@ import datetime
 import re
 
 # CONSTANTS
-SOURCE_DIR = "C:\\Users\\User\\Documents\\Salt Slack export Oct 9 2017\\"  # TODO change this
 LOG_MODES = ("LOW", "MEDIUM", "HIGH")
-LOG_MODE = "MEDIUM"
+LOG_MODE = "LOW"
 
 SUBTYPES_SIMPLE = ('bot_add',
                    'bot_remove',
@@ -26,6 +25,19 @@ SUBTYPES_COMPLEX = ('bot_message',
 SLACK_HTML_ENCODING = {'&amp;': '&',
                        '&lt;': '<',
                        '&gt;': '>'}
+
+# Each switch maps to a 2 element array
+# The first element is boolean and determines whether the switch requires additional data
+# If not the default data is contained in the second item
+SWITCH_CHAR = '-'
+SWITCH_DATA = {'i': [True, ''],
+               'e': [False, 'export'],
+               'ej': [False, 'export_json'],
+               'l': [False, '']}
+
+# RUNTIME OPTIONS
+SWITCHES = {}
+SOURCE_DIR = ""
 
 # VARS
 # Slack data
@@ -344,7 +356,86 @@ def outputSubtypes():
     for i in sorted(subtypes):
         print(i)
 
+# Misc.
+def loadArgs():
+    interpretArgs(sys.argv)
+    setSlackSource()
+    setLogMode()
+
+def interpretArgs(argv):
+    # Remove script location
+    argv = argv[1:]
+
+    i = 0
+    while i < len(argv):
+        # Argument must be a switch
+        if not argv[i].startswith(SWITCH_CHAR):
+            sys.exit("Incorrect args. Expected a switch")
+
+        # Switch must be valid
+        switch = argv[i][1:]
+        if not switch in SWITCH_DATA:
+            sys.exit("Incorrect args. Switch '" + switch + "' not found")
+
+        # Switch must not have been added already
+        if switch in SWITCHES:
+            sys.exit("Incorrect args. Switch '" + switch + "' has already been added")
+
+        # Does switch require an argument
+        if SWITCH_DATA[switch][0]:
+            i += 1
+            if i >= len(argv):
+                sys.exit("Incorrect args. Required an argument for '" + switch + "', but ran out of arguments")
+
+            if argv[i].startswith(SWITCH_CHAR):
+                sys.exit("Incorrect args. Required argument for '" + switch + "', but found a switch")
+
+            SWITCHES[switch] = argv[i]
+        else:
+            i += 1
+
+            # Default if there are no more arguments
+            if i >= len(argv):
+                SWITCHES[switch] = SWITCH_DATA[switch][1]
+                break
+
+            # If next argument is a switch use default data
+            if argv[i].startswith(SWITCH_CHAR):
+                SWITCHES[switch] = SWITCH_DATA[switch][1]
+                continue
+
+            SWITCHES[switch] = argv[i]
+
+        i += 1
+
+def setSlackSource():
+    global SOURCE_DIR
+
+    if not 'i' in SWITCHES:
+        return
+
+    if SWITCHES['i'] == "":
+        return
+
+    SOURCE_DIR = SWITCHES['i']
+    if not SOURCE_DIR.endswith("\\"):
+        SOURCE_DIR += "\\"
+
+def setLogMode():
+    global LOG_MODE
+
+    if not 'l' in SWITCHES:
+        return
+
+    if SWITCHES['l'].upper() not in LOG_MODES:
+        modes = ""
+        for i in LOG_MODES:
+            modes += i + ", "
+
+        sys.exit("Incorrect log mode specified. Please use one of the following: " + modes[:-2])
+
+    LOG_MODE = SWITCHES['l'].upper()
+
 # START OF PROGRAM
+loadArgs()
 loadSlack()
-# outputSubtypes()
-exportChannelData("export")
