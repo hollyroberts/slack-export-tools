@@ -23,6 +23,10 @@ SUBTYPES_SIMPLE = ('bot_add',
 SUBTYPES_COMPLEX = ('bot_message',
                     'bot_message') # Because python interprets a single element set as not a set :(
 
+SLACK_HTML_ENCODING = {'&amp;': '&',
+                       '&lt;': '<',
+                       '&gt;': '>'}
+
 # VARS
 # Slack data
 users = []
@@ -274,6 +278,10 @@ def padInt(val: int, length=2):
     return ret
 
 def improveMsgContents(msg: str, include_ampersand=True):
+    # Replace HTML encoded characters
+    for i in SLACK_HTML_ENCODING:
+        msg = msg.replace(i, SLACK_HTML_ENCODING[i])
+
     # Make mentions readable
     mentions = re.finditer('<@U([^|>]+)>', msg)
 
@@ -295,6 +303,7 @@ def improveMsgContents(msg: str, include_ampersand=True):
 
     # Improve indentation
     msg = msg.replace("\n", "\n\t\t")
+
     return msg
 
 def getUserName(message):
