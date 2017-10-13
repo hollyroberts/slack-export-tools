@@ -33,11 +33,13 @@ SWITCH_CHAR = '-'
 SWITCH_DATA = {'i': [True, ''],
                'e': [False, 'export'],
                'ej': [False, 'export_json'],
-               'l': [False, '']}
+               'l': [True, ''],
+               'o': [True, '']}
 
 # RUNTIME OPTIONS
 SWITCHES = {}
 SOURCE_DIR = ""
+EXPORT_DIR = ""
 
 # VARS
 # Slack data
@@ -195,6 +197,13 @@ def printFinalStats(user_scores, channel_scores):
         # print(i + ":\t" + str(messages) + " (" + str(percentage) + "%)")
 
 # Exporting
+def exportChosenOptions():
+    if 'e' in SWITCHES:
+        exportChannelData(EXPORT_DIR + SWITCHES['e'])
+
+    if 'ej' in SWITCHES:
+        exportChannelData(EXPORT_DIR + SWITCHES['ej'], as_json=True)
+
 def exportChannelData(folder_loc: str, as_json=False):
     print("Exporting channel data to '" + folder_loc + "'")
 
@@ -436,6 +445,20 @@ def setLogMode():
 
     LOG_MODE = SWITCHES['l'].upper()
 
+def setExportLocation():
+    global EXPORT_DIR
+
+    if not 'o' in SWITCHES:
+        return
+
+    if SWITCHES['o'] == "":
+        return
+
+    EXPORT_DIR = SWITCHES['o']
+    if not EXPORT_DIR.endswith("\\"):
+        EXPORT_DIR += "\\"
+
 # START OF PROGRAM
 loadArgs()
 loadSlack()
+exportChosenOptions()
