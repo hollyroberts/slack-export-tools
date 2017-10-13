@@ -9,24 +9,23 @@ import re
 LOG_MODES = ("LOW", "MEDIUM", "HIGH")
 LOG_MODE = "LOW"
 
-SUBTYPES_SIMPLE = ('bot_add',
-                   'bot_remove',
-                   'channel_archive',
-                   'channel_join',
-                   'channel_leave',
-                   'channel_name',
-                   'channel_purpose',
-                   'channel_topic',
-                   'channel_unarchive')
+SUBTYPES_NO_PREFIX = ('channel_archive',
+                      'channel_join',
+                      'channel_leave',
+                      'channel_name',
+                      'channel_purpose',
+                      'channel_topic',
+                      'channel_unarchive')
 
-SUBTYPES_COMPLEX = ('bot_message',
-                    'bot_message') # Because python interprets a single element set as not a set :(
+SUBTYPES_REDUCED_PREFIX = ('bot_add',
+                           'bot_remove',
+                           'reminder_add',)
 
 SLACK_HTML_ENCODING = {'&amp;': '&',
                        '&lt;': '<',
                        '&gt;': '>'}
 
-INDENTATION = "        " # 8 spaces (2 tabs for most editors)
+INDENTATION = "        "  # 8 spaces (2 tabs for most editors)
 
 # Each switch maps to a 2 element array
 # The first element is boolean and determines whether the switch requires additional data
@@ -70,6 +69,7 @@ def loadJSONFile(file):
     file.close()
 
     return data
+
 
 def loadSlack():
     global users, users_map
@@ -274,10 +274,10 @@ def formatMessageJSON(msg):
         subtype = msg['subtype']
 
     # Do stuff based on the subtype
-    if subtype in SUBTYPES_SIMPLE:
+    if subtype in SUBTYPES_NO_PREFIX:
         ret += improveMsgContents(msg['text'], include_ampersand=False) + "\n"
-    elif subtype in SUBTYPES_COMPLEX:
-        ret += getUserName(msg) + ": " + getMsgContents(msg) + "\n"
+    elif subtype in SUBTYPES_REDUCED_PREFIX:
+        ret += getUserName(msg) + " " + getMsgContents(msg) + "\n"
     else:
         ret += getUserName(msg) + ": " + getMsgContents(msg) + "\n"
 

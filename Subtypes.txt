@@ -1,3 +1,4 @@
+DONE:
 bot_add
 bot_message
 bot_remove
@@ -8,12 +9,16 @@ channel_name
 channel_purpose
 channel_topic
 channel_unarchive
+reminder_add
+slackbot_response
+
+NOT DONE:
 file_comment
 file_mention
 file_share
-me_message
 pinned_item
-reminder_add
 reply_broadcast
-slackbot_response
 thread_broadcast
+
+REQUIRES RTF:
+me_message
