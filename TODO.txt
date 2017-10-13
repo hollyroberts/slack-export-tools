@@ -1,4 +1,3 @@
 Finish off work on message subtypes
-Beautify channel mentions (same as user mentions)
 Handle attachments
 	Add text, then add all attachments

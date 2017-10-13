@@ -46,6 +46,7 @@ EXPORT_DIR = ""
 users = []
 users_map = {}
 channels = []
+channel_map = {}
 channel_data = {}
 
 # Export state
@@ -70,12 +71,13 @@ def loadJSONFile(file):
 
 def loadSlack():
     global users, users_map
-    global channels, channel_data
+    global channels, channel_map, channel_data
 
     print("Loading slack from: " + SOURCE_DIR)
 
     # Load channels and users
-    channels = loadChannels()
+    channel_map = loadChannelMap()
+    channels = sorted(channel_map.values())
     users_map = loadUserMapping()
     users = sorted(list(users_map.values()))
 
@@ -92,16 +94,15 @@ def loadSlack():
 
     print("Slack loaded")
 
-def loadChannels():
+def loadChannelMap():
     channel_data = loadJSONFile("channels.json")
 
     # Build the array of channel names
-    channels = []
+    map = {}
     for i in channel_data:
-        channels.append(i['name'])
-    channels.sort()
+        map[i['id']] = i['name']
 
-    return channels
+    return map
 
 def loadChannelData(channel: str):
     data = []
@@ -303,7 +304,33 @@ def improveMsgContents(msg: str, include_ampersand=True):
     for i in SLACK_HTML_ENCODING:
         msg = msg.replace(i, SLACK_HTML_ENCODING[i])
 
-    # Make mentions readable
+    # Make user and channel mentions readable
+    msg = improveUserMentions(msg, include_ampersand)
+    msg = improveChannelMentions(msg)
+
+    # Improve indentation (use spaces instead of tabs, I expect most people to view the data using a monospaced font)
+    # At least this works for notepad and notepad++
+    msg = msg.replace("\n", "\n        ")
+
+    return msg
+
+def improveChannelMentions(msg: str):
+    mentions = re.finditer('<#C([^|>]+)>', msg)
+
+    for match in mentions:
+        new_text = "#"
+        id = match.group()[2:-1]
+
+        if id in channel_map:
+            new_text += channel_map[id]
+        else:
+            new_text += id
+
+        msg = msg.replace(match.group(), new_text)
+
+    return msg
+
+def improveUserMentions(msg: str, include_ampersand=True):
     mentions = re.finditer('<@U([^|>]+)>', msg)
 
     for match in mentions:
@@ -321,10 +348,6 @@ def improveMsgContents(msg: str, include_ampersand=True):
             new_text += ID
 
         msg = msg.replace(match.group(), new_text)
-
-    # Improve indentation (use spaces instead of tabs, I expect most people to view the data using a monospaced font)
-    # At least this works for notepad and notepad++
-    msg = msg.replace("\n", "\n        ")
 
     return msg
 
