@@ -11,7 +11,6 @@ LOG_MODES = ("LOW", "MEDIUM", "HIGH")
 LOG_MODE = "MEDIUM"
 
 SUBTYPES_SIMPLE = ('bot_add',
-                   'bot_message',
                    'bot_remove',
                    'channel_archive',
                    'channel_join',
@@ -19,7 +18,10 @@ SUBTYPES_SIMPLE = ('bot_add',
                    'channel_name',
                    'channel_purpose',
                    'channel_topic',
-                   'channel_unarchive',)
+                   'channel_unarchive')
+
+SUBTYPES_COMPLEX = ('bot_message',
+                    'bot_message') # Because python interprets a single element set as not a set :(
 
 # VARS
 # Slack data
@@ -185,16 +187,19 @@ def exportChannelData(folder_loc: str, as_json=False):
 
     for channel in channels:
         data = channel_data[channel]
+
         loc = folder_loc + "\\#" + channel
-
-        if (LOG_MODES.index(LOG_MODE) >= LOG_MODES.index("MEDIUM")):
-            print("Exporting '" + loc + "'")
-
         if (as_json):
             loc += ".json"
-            data = json.dumps(data, indent=4)
         else:
             loc += ".txt"
+
+        if (LOG_MODES.index(LOG_MODE) >= LOG_MODES.index("MEDIUM")):
+            print("Exporting #" + channel + " to '" + loc + "'")
+
+        if (as_json):
+            data = json.dumps(data, indent=4)
+        else:
             data = formatChannelJSON(data)
 
         file = open(loc, "w", encoding="utf8")
@@ -233,7 +238,7 @@ def formatMessageJSON(msg):
         ret += " -- " + str(date.day) + "/" + str(date.month) + "/" + str(date.year) + " -- \n"
         last_date = date
 
-    ret += "[" + padInt(time.hour) + ":" + padInt(time.minute) + "] "
+    ret += "[" + padInt(time.hour) + ":" + padInt(time.minute) + "]\t"
 
     # Get subtype
     subtype = None
@@ -242,21 +247,23 @@ def formatMessageJSON(msg):
 
     # Do stuff based on the subtype
     if subtype in SUBTYPES_SIMPLE:
-        if not 'text' in msg:
-            ret += "WARNING: THIS IS STILL IN DEVELOPMENT AND NO TEXT COULD BE FOUND" # Should be fixed shortly
-        else:
-            ret += simplifyMarkup(msg['text'], include_ampersand=False) + "\n"
-    elif 'text' in msg:
-        ret += getUserName(msg) + ": " + simplifyMarkup(msg['text']) + "\n"
+        ret += improveMsgContents(msg['text'], include_ampersand=False) + "\n"
+    elif subtype in SUBTYPES_COMPLEX:
+        ret += getUserName(msg) + ": " + getMsgContents(msg) + "\n"
     else:
-        print(subtype)
+        ret += getUserName(msg) + ": " + getMsgContents(msg) + "\n"
 
     return ret
 
 def getMsgContents(msg):
     # If text is available (it sometimes might not be) then add it first
     # If attachments exist then add them
-    pass
+    ret = ""
+
+    if 'text' in msg:
+        ret += improveMsgContents(msg['text'])
+
+    return ret
 
 def padInt(val: int, length=2):
     ret = str(val)
@@ -266,7 +273,7 @@ def padInt(val: int, length=2):
 
     return ret
 
-def simplifyMarkup(msg: str, include_ampersand=True):
+def improveMsgContents(msg: str, include_ampersand=True):
     # Make mentions readable
     mentions = re.finditer('<@U([^|>]+)>', msg)
 
@@ -286,6 +293,8 @@ def simplifyMarkup(msg: str, include_ampersand=True):
 
         msg = msg.replace(match.group(), new_text)
 
+    # Improve indentation
+    msg = msg.replace("\n", "\n\t\t")
     return msg
 
 def getUserName(message):
