@@ -19,7 +19,9 @@ SUBTYPES_NO_PREFIX = ('channel_archive',
 
 SUBTYPES_REDUCED_PREFIX = ('bot_add',
                            'bot_remove',
-                           'reminder_add',)
+                           'reminder_add')
+
+SUBTYPES_CUSTOM = ('me_message', ) # Because python is weird with single element sets
 
 SLACK_HTML_ENCODING = {'&amp;': '&',
                        '&lt;': '<',
@@ -69,7 +71,6 @@ def loadJSONFile(file):
     file.close()
 
     return data
-
 
 def loadSlack():
     global users, users_map
@@ -278,10 +279,20 @@ def formatMessageJSON(msg):
         ret += improveMsgContents(msg['text'], include_ampersand=False) + "\n"
     elif subtype in SUBTYPES_REDUCED_PREFIX:
         ret += getUserName(msg) + " " + getMsgContents(msg) + "\n"
+    elif subtype in SUBTYPES_CUSTOM:
+        ret += getMsgContentsCustomType(msg, subtype)
     else:
         ret += getUserName(msg) + ": " + getMsgContents(msg) + "\n"
 
     return ret
+
+def getMsgContentsCustomType(msg, subtype):
+    if subtype == 'me_message':
+        return getUserName(msg) + ": _" + getMsgContents(msg) + "_\n"
+    else:
+        # Should never be reached
+        print("How on earth did we get here?")
+        return getUserName(msg) + ": " + getMsgContents(msg) + "\n"
 
 def getMsgContents(msg):
     # If text is available (it sometimes might not be) then add it first
@@ -290,14 +301,6 @@ def getMsgContents(msg):
 
     if 'text' in msg:
         ret += improveMsgContents(msg['text'])
-
-    return ret
-
-def padInt(val: int, length=2):
-    ret = str(val)
-
-    while len(ret) < length:
-        ret = "0" + ret
 
     return ret
 
@@ -317,8 +320,10 @@ def improveMsgContents(msg: str, include_ampersand=True):
     return msg
 
 def improveChannelMentions(msg: str):
+    # Use regex to find channel mentions
     mentions = re.finditer('<#C([^|>]+)>', msg)
 
+    # Map channel IDs to channel names
     for match in mentions:
         new_text = "#"
         id = match.group()[2:-1]
@@ -333,8 +338,10 @@ def improveChannelMentions(msg: str):
     return msg
 
 def improveUserMentions(msg: str, include_ampersand=True):
+    # Use regex to find user mentions
     mentions = re.finditer('<@U([^|>]+)>', msg)
 
+    # Map user ID to name
     for match in mentions:
         new_text = ""
         if include_ampersand:
@@ -391,6 +398,14 @@ def outputSubtypes():
         print(i)
 
 # Misc.
+def padInt(val: int, length=2):
+    ret = str(val)
+
+    while len(ret) < length:
+        ret = "0" + ret
+
+    return ret
+
 def loadArgs():
     interpretArgs(sys.argv)
     setSlackSource()

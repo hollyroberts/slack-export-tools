@@ -1,3 +1,5 @@
 Finish off work on message subtypes
 Handle attachments
 	Add text, then add all attachments
+
+Perhaps convert all HTML chars at the very very end?
