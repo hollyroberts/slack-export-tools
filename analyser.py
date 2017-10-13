@@ -301,8 +301,9 @@ def improveMsgContents(msg: str, include_ampersand=True):
 
         msg = msg.replace(match.group(), new_text)
 
-    # Improve indentation
-    msg = msg.replace("\n", "\n\t\t")
+    # Improve indentation (use spaces instead of tabs, I expect most people to view the data using a monospaced font)
+    # At least this works for notepad and notepad++
+    msg = msg.replace("\n", "\n        ")
 
     return msg
 
