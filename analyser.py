@@ -26,6 +26,8 @@ SLACK_HTML_ENCODING = {'&amp;': '&',
                        '&lt;': '<',
                        '&gt;': '>'}
 
+INDENTATION = "        " # 8 spaces (2 tabs for most editors)
+
 # Each switch maps to a 2 element array
 # The first element is boolean and determines whether the switch requires additional data
 # If not the default data is contained in the second item
@@ -300,17 +302,17 @@ def padInt(val: int, length=2):
     return ret
 
 def improveMsgContents(msg: str, include_ampersand=True):
-    # Replace HTML encoded characters
-    for i in SLACK_HTML_ENCODING:
-        msg = msg.replace(i, SLACK_HTML_ENCODING[i])
-
     # Make user and channel mentions readable
     msg = improveUserMentions(msg, include_ampersand)
     msg = improveChannelMentions(msg)
 
+    # Replace HTML encoded characters
+    for i in SLACK_HTML_ENCODING:
+        msg = msg.replace(i, SLACK_HTML_ENCODING[i])
+
     # Improve indentation (use spaces instead of tabs, I expect most people to view the data using a monospaced font)
     # At least this works for notepad and notepad++
-    msg = msg.replace("\n", "\n        ")
+    msg = msg.replace("\n", "\n" + INDENTATION)
 
     return msg
 
