@@ -27,9 +27,10 @@ SLACK_HTML_ENCODING = {'&amp;': '&',
                        '&lt;': '<',
                        '&gt;': '>'}
 
-ATTACHMENT_FIELDS = ('subtext',
-                     'title',
-                     'text')
+ATTACHMENT_FIELDS = ('fields',
+                     'subtext',
+                     'text',
+                     'title')
 
 INDENTATION = "        "  # 8 spaces
 INDENTATION_SHORT = "     "  # 5 spaces
@@ -257,12 +258,12 @@ def formatChannelJSON(raw_json):
     # Build and return data
     formatted_data = []
     for msg in raw_json:
-        formatted_data.append(formatMessageJSON(msg))
+        formatted_data.append(formatMsgJSON(msg))
     formatted_data = "".join(formatted_data)
 
     return formatted_data.strip()
 
-def formatMessageJSON(msg):
+def formatMsgJSON(msg):
     global last_date, last_user
 
     prefix = "\n"
@@ -298,9 +299,9 @@ def formatMessageJSON(msg):
     if subtype in SUBTYPES_NO_PREFIX:
         ret += improveMsgContents(msg['text'], include_ampersand=False)
     elif subtype in SUBTYPES_REDUCED_PREFIX:
-        ret += username + " " + getMsgContents(msg)
+        ret += username + " " + formatMsgContents(msg)
     elif subtype in SUBTYPES_CUSTOM:
-        ret += getMsgContentsCustomType(msg, subtype, username)
+        ret += formatMsgContentsCustomType(msg, subtype, username)
     else:
         # Standard message
         # If export mode is not compact, then display name if new user
@@ -309,24 +310,24 @@ def formatMessageJSON(msg):
         elif last_user != username:
             ret = INDENTATION + username + ":\n" + ret
 
-        ret += getMsgContents(msg)
+        ret += formatMsgContents(msg)
 
     # Update last_user
     last_user = username
 
     return prefix + ret
 
-def getMsgContentsCustomType(msg, subtype, username):
+def formatMsgContentsCustomType(msg, subtype, username):
     ret = ""
 
     if subtype == 'me_message':
         if COMPACT_EXPORT or last_user != username:
             ret += username + ": "
-        ret += "_" + getMsgContents(msg) + "_"
+        ret += "_" + formatMsgContents(msg) + "_"
 
     return ret
 
-def getMsgContents(msg):
+def formatMsgContents(msg):
     # If text is available (it sometimes might not be) then add it first
     # If attachments exist then add them
     ret = ""
@@ -340,37 +341,67 @@ def getMsgContents(msg):
         attachments = msg['attachments']
 
         for a in attachments:
-            # Only process attachments that contain at least 1 supported field
-            contains_field = False
-            for field in ATTACHMENT_FIELDS:
-                if field in a:
-                    contains_field = True
-                    break
-
-            if not contains_field:
-                continue
-
-            # Pretext should appear as standard text
-            if 'pretext' in a:
-                ret += improveMsgContents(a['pretext'])
-
-            # Denote the attachment by adding A: underneath the timestamp
-            if not COMPACT_EXPORT:
-                ret += "\n"
-            ret += "\n" + INDENTATION_SHORT + "A: "
-
-            # Add title (include link if exists
-            if 'title' in a:
-                ret += improveMsgContents(a['title']) + "\n" + INDENTATION
-
-            if 'text' in a:
-                ret += improveMsgContents(a['text']) + "\n"
+            ret += formatMsgAttachment(a)
 
     # Last attachment should not add a newline, this is the easiest way to get rid of it
     if ret.endswith("\n"):
         ret = ret[:-1]
 
     return ret
+
+def formatMsgAttachment(a):
+    body_str = ""
+    ret_str = ""
+
+    # Only process attachments that contain at least 1 supported field
+    if not any(field in ATTACHMENT_FIELDS for field in a):
+        return body_str
+
+    # Pretext should appear as standard text
+    if 'pretext' in a:
+        ret_str = improveMsgContents(a['pretext'])
+
+    # Add title (include link if exists
+    if 'title' in a:
+        body_str += improveMsgContents(a['title'])\
+
+        # Text isn't required, but it's highly likely
+        if 'text' in a:
+            body_str += "\n" + INDENTATION
+
+    # Add text
+    if 'text' in a:
+        body_str += improveMsgContents(a['text'])
+
+        if not COMPACT_EXPORT:
+            body_str += "\n"
+
+    # Add fields
+    if 'fields' in a:
+        # Remove the newline from the text in the attachment
+        if body_str.endswith("\n"):
+            body_str = body_str[:-1]
+
+        # Combine fields
+        fields = a['fields']
+        field_str = ""
+        for f in fields:
+            if 'title' in f:
+                field_str += f['title'] + "\n"
+
+            field_str += f['value']
+
+        # Improve text and add to return string
+        field_str = improveMsgContents(field_str)
+        if body_str == "":
+            body_str = field_str
+        else:
+            body_str += "\n\n" + field_str
+
+    # Denote the attachment by adding A: inline with the timestamp
+    ret_str += "\n" + INDENTATION_SHORT + "A: " + body_str
+
+    return ret_str
 
 def improveMsgContents(msg: str, include_ampersand=True):
     # Make user and channel mentions readable
@@ -446,17 +477,17 @@ def improveUserMentions(msg: str, include_ampersand=True):
 
     return msg
 
-def getUserName(message):
-    if 'user' in message:
-        username = message['user']
+def getUserName(msg):
+    if 'user' in msg:
+        username = msg['user']
 
         if username == "USLACKBOT":
             return 'Slackbot'
         else:
             return users_map[username]
 
-    if 'username' in message:
-        username = message['username']
+    if 'username' in msg:
+        username = msg['username']
         if username in users_map:
             return users_map[username]
         else:

@@ -1,7 +1,8 @@
 Currently:
-Pretext
-Text
+pretext
+title
+text
 
 Planned:
-Title
-Fields
+fields
+title_link
