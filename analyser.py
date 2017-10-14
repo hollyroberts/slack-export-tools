@@ -30,7 +30,8 @@ SLACK_HTML_ENCODING = {'&amp;': '&',
 ATTACHMENT_FIELDS = ('fields',
                      'subtext',
                      'text',
-                     'title')
+                     'title',
+                     'title_link')
 
 INDENTATION = "        "  # 8 spaces
 INDENTATION_SHORT = "     "  # 5 spaces
@@ -361,9 +362,21 @@ def formatMsgAttachment(a):
     if 'pretext' in a:
         ret_str = improveMsgContents(a['pretext'])
 
-    # Add title (include link if exists
-    if 'title' in a:
-        body_str += improveMsgContents(a['title'])\
+    # Add title (include link if exists)
+    if 'title_link' in a and not 'title' in a and 'text' not in a:
+        print(a)
+
+    title_str = ""
+    if 'title_link' in a:
+        title_str = "<" + a['title_link'] + ">"
+
+        if 'title' in a:
+            title_str = title_str[:-1] + "|" + a['title'] + ">"
+    elif 'title' in a:
+        title_str = a['title']
+
+    if title_str != "":
+        body_str += improveMsgContents(title_str)
 
         # Text isn't required, but it's highly likely
         if 'text' in a:
