@@ -266,24 +266,24 @@ def formatChannelJSON(raw_json):
 def formatMsgJSON(msg):
     global last_date, last_user
 
-    prefix = "\n"
-    ret = ""
+    prefix_str = "\n"
 
-    # Get timestamp and process
+    # Get timestamp
     timestamp = msg['ts']
     dt = datetime.datetime.fromtimestamp(float(timestamp))
     date = dt.date()
     time = dt.time()
 
+    # Denote change in date if new date
     if last_date == None or last_date < date:
-        prefix += " -- " + str(date.day) + "/" + str(date.month) + "/" + str(date.year) + " -- \n"
+        prefix_str += " -- " + str(date.day) + "/" + str(date.month) + "/" + str(date.year) + " -- \n"
         if not COMPACT_EXPORT:
-            prefix += "\n"
+            prefix_str = "\n" + prefix_str + "\n"
 
         last_date = date
 
     # Timestamp
-    ret += "[" + padInt(time.hour) + ":" + padInt(time.minute) + "] "
+    body_str = "[" + padInt(time.hour) + ":" + padInt(time.minute) + "] "
 
     # Get subtype and username
     subtype = None
@@ -291,31 +291,31 @@ def formatMsgJSON(msg):
         subtype = msg['subtype']
     username = getUserName(msg)
 
-    # If not compact and message is new, add a newline to the prefix
-    if not COMPACT_EXPORT and last_user != username:
-        prefix = "\n" + prefix
+    # If not compact and message is new (and date has not changed), add a newline to the prefix
+    if not COMPACT_EXPORT and last_user != username and prefix_str == "\n":
+        prefix_str = "\n" + prefix_str
 
     # Do stuff based on the subtype
     if subtype in SUBTYPES_NO_PREFIX:
-        ret += improveMsgContents(msg['text'], include_ampersand=False)
+        body_str += improveMsgContents(msg['text'], include_ampersand=False)
     elif subtype in SUBTYPES_REDUCED_PREFIX:
-        ret += username + " " + formatMsgContents(msg)
+        body_str += username + " " + formatMsgContents(msg)
     elif subtype in SUBTYPES_CUSTOM:
-        ret += formatMsgContentsCustomType(msg, subtype, username)
+        body_str += formatMsgContentsCustomType(msg, subtype, username)
     else:
         # Standard message
         # If export mode is not compact, then display name if new user
         if COMPACT_EXPORT:
-            ret += username + ": "
+            body_str += username + ": "
         elif last_user != username:
-            ret = INDENTATION + username + ":\n" + ret
+            body_str = INDENTATION + username + ":\n" + body_str
 
-        ret += formatMsgContents(msg)
+        body_str += formatMsgContents(msg)
 
     # Update last_user
     last_user = username
 
-    return prefix + ret
+    return prefix_str + body_str
 
 def formatMsgContentsCustomType(msg, subtype, username):
     ret = ""
@@ -389,14 +389,15 @@ def formatMsgAttachment(a):
             if 'title' in f:
                 field_str += f['title'] + "\n"
 
-            field_str += f['value']
+            field_str += f['value'] + "\n\n"
+        field_str = field_str.strip()
 
         # Improve text and add to return string
         field_str = improveMsgContents(field_str)
         if body_str == "":
             body_str = field_str
         else:
-            body_str += "\n\n" + field_str
+            body_str += "\n\n" + INDENTATION + field_str
 
     # Denote the attachment by adding A: inline with the timestamp
     ret_str += "\n" + INDENTATION_SHORT + "A: " + body_str
