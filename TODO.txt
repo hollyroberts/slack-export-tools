@@ -2,4 +2,5 @@ Finish off work on message subtypes
 Handle attachments
 	Add text, then add all attachments
 
+Add support for channel mentions with pipe
 Perhaps convert all HTML chars at the very very end?

@@ -33,7 +33,8 @@ INDENTATION = "        "  # 8 spaces (2 tabs for most editors)
 # The first element is boolean and determines whether the switch requires additional data
 # If not the default data is contained in the second item
 SWITCH_CHAR = '-'
-SWITCH_DATA = {'i': [True, ''],
+SWITCH_DATA = {'c': [True, ''],
+               'i': [True, ''],
                'e': [False, 'export'],
                'ej': [False, 'export_json'],
                'l': [True, ''],
@@ -43,6 +44,10 @@ SWITCH_DATA = {'i': [True, ''],
 SWITCHES = {}
 SOURCE_DIR = ""
 EXPORT_DIR = ""
+COMPACT_EXPORT = False
+
+TRUE_STRINGS = ['T', 'TRUE']
+FALSE_STRINGS = ['F', 'FALSE']
 
 # VARS
 # Slack data
@@ -253,8 +258,9 @@ def formatChannelJSON(raw_json):
     return formatted_data
 
 def formatMessageJSON(msg):
-    global last_date
+    global last_date, last_user
 
+    prefix = "\n"
     ret = ""
 
     # Get timestamp and process
@@ -264,35 +270,56 @@ def formatMessageJSON(msg):
     time = dt.time()
 
     if last_date == None or last_date < date:
-        ret += " -- " + str(date.day) + "/" + str(date.month) + "/" + str(date.year) + " -- \n"
+        prefix += " -- " + str(date.day) + "/" + str(date.month) + "/" + str(date.year) + " -- \n"
+        if not COMPACT_EXPORT:
+            prefix += "\n"
+
         last_date = date
 
-    ret += "[" + padInt(time.hour) + ":" + padInt(time.minute) + "]\t"
+    # Timestamp
+    ret += "[" + padInt(time.hour) + ":" + padInt(time.minute) + "] "
 
-    # Get subtype
+    # Get subtype and username
     subtype = None
     if 'subtype' in msg:
         subtype = msg['subtype']
+    username = getUserName(msg)
+
+    # If not compact and message is new, add a newline to the prefix
+    if not COMPACT_EXPORT and last_user != username:
+        prefix = "\n" + prefix
 
     # Do stuff based on the subtype
     if subtype in SUBTYPES_NO_PREFIX:
-        ret += improveMsgContents(msg['text'], include_ampersand=False) + "\n"
+        ret += improveMsgContents(msg['text'], include_ampersand=False)
     elif subtype in SUBTYPES_REDUCED_PREFIX:
-        ret += getUserName(msg) + " " + getMsgContents(msg) + "\n"
+        ret += username + " " + getMsgContents(msg)
     elif subtype in SUBTYPES_CUSTOM:
-        ret += getMsgContentsCustomType(msg, subtype)
+        ret += getMsgContentsCustomType(msg, subtype, username)
     else:
-        ret += getUserName(msg) + ": " + getMsgContents(msg) + "\n"
+        # Standard message
+        # If export mode is not compact, then display name if new user
+        if COMPACT_EXPORT:
+            ret += username + ": "
+        elif last_user != username:
+            ret = INDENTATION + username + ":\n" + ret
+
+        ret += getMsgContents(msg)
+
+    # Update last_user
+    last_user = username
+
+    return prefix + ret
+
+def getMsgContentsCustomType(msg, subtype, username):
+    ret = ""
+
+    if subtype == 'me_message':
+        if COMPACT_EXPORT or last_user != username:
+            ret += username + ": "
+        ret += "_" + getMsgContents(msg) + "_"
 
     return ret
-
-def getMsgContentsCustomType(msg, subtype):
-    if subtype == 'me_message':
-        return getUserName(msg) + ": _" + getMsgContents(msg) + "_\n"
-    else:
-        # Should never be reached
-        print("How on earth did we get here?")
-        return getUserName(msg) + ": " + getMsgContents(msg) + "\n"
 
 def getMsgContents(msg):
     # If text is available (it sometimes might not be) then add it first
@@ -321,6 +348,7 @@ def improveMsgContents(msg: str, include_ampersand=True):
 
 def improveChannelMentions(msg: str):
     # Use regex to find channel mentions
+    # TODO improve/fix with |
     mentions = re.finditer('<#C([^|>]+)>', msg)
 
     # Map channel IDs to channel names
@@ -406,10 +434,21 @@ def padInt(val: int, length=2):
 
     return ret
 
+def strToBool(s: str):
+    if s.upper() in TRUE_STRINGS:
+        return True
+    elif s.upper() in FALSE_STRINGS:
+        return False
+    else:
+        print("Could not interpret '" + s + "' as boolean, assuming FALSE")
+        return False
+
+# Runtime
 def loadArgs():
     interpretArgs(sys.argv)
     setSlackSource()
     setLogMode()
+    setExportMode()
 
 def interpretArgs(argv):
     # Remove script location
@@ -497,6 +536,14 @@ def setExportLocation():
     EXPORT_DIR = SWITCHES['o']
     if not EXPORT_DIR.endswith("\\"):
         EXPORT_DIR += "\\"
+
+def setExportMode():
+    global COMPACT_EXPORT
+
+    if not 'c' in SWITCHES:
+        return
+
+    COMPACT_EXPORT = strToBool(SWITCHES['c'])
 
 # START OF PROGRAM
 loadArgs()
