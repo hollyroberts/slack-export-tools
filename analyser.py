@@ -27,7 +27,8 @@ SLACK_HTML_ENCODING = {'&amp;': '&',
                        '&lt;': '<',
                        '&gt;': '>'}
 
-INDENTATION = "        "  # 8 spaces (2 tabs for most editors)
+INDENTATION = "        "  # 8 spaces
+INDENTATION_SHORT = "     "  # 5 spaces
 
 # Each switch maps to a 2 element array
 # The first element is boolean and determines whether the switch requires additional data
@@ -326,8 +327,25 @@ def getMsgContents(msg):
     # If attachments exist then add them
     ret = ""
 
+    # Plain text
     if 'text' in msg:
         ret += improveMsgContents(msg['text'])
+
+    # Attachments
+    if 'attachments' in msg:
+        attachments = msg['attachments']
+
+        for a in attachments:
+            if 'pretext' in a:
+                ret += improveMsgContents(a['pretext'])
+
+            ret += "\n" + INDENTATION_SHORT + "A: "
+
+            if 'text' in a:
+                ret += improveMsgContents(a['text']) + "\n"
+
+    if ret.endswith("\n"):
+        ret = ret[:-1]
 
     return ret
 
