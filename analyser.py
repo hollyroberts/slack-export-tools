@@ -68,7 +68,6 @@ channel_data = {}
 last_date = None
 last_user = None
 
-
 # FUNCS
 # Loading
 def loadJSONFile(file):
@@ -363,9 +362,6 @@ def formatMsgAttachment(a):
         ret_str = improveMsgContents(a['pretext'])
 
     # Add title (include link if exists)
-    if 'title_link' in a and not 'title' in a and 'text' not in a:
-        print(a)
-
     title_str = ""
     if 'title_link' in a:
         title_str = "<" + a['title_link'] + ">"
@@ -525,6 +521,20 @@ def outputSubtypes():
                 subtypes.add(message['subtype'])
 
     print("Subtypes found in message history:")
+    for i in sorted(subtypes):
+        print(i)
+
+def outputTypes():
+    # On the test data set, only 'message' is contained, so this is fairly redundant atm
+    subtypes = set()
+
+    print("Scanning history")
+    for channel in channel_data:
+        for message in channel_data[channel]:
+            if "type" in message:
+                subtypes.add(message['type'])
+
+    print("Types found in message history:")
     for i in sorted(subtypes):
         print(i)
 

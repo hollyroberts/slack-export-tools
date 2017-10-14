@@ -9,13 +9,14 @@ Export
 	Generate a neater version
 		Organised by channel
 		Timestamped (UTC)
-		Appropriate markup (\) removed
-		Also needs to check for subtext
+		Appropriate markup removed
+		Also needs to check for attachments
 		Add a readme (Warn about UTC, Data may be incomplete)
+		Option to export as RTF, hyperlinks can be encoded and possibly even images
 	List of pins
 
 Debug
-	List of message subtypes
+	List of message types/subtypes
 	List of users (normal/bot)
 	List of channels
 	List of pinned events
