@@ -250,12 +250,12 @@ def formatChannelJSON(raw_json):
     last_user = None
 
     # Build and return data
-    formatted_data = ""
+    formatted_data = []
     for msg in raw_json:
-        formatted_data += formatMessageJSON(msg)
-    formatted_data.strip()
+        formatted_data.append(formatMessageJSON(msg))
+    formatted_data = "".join(formatted_data)
 
-    return formatted_data
+    return formatted_data.strip()
 
 def formatMessageJSON(msg):
     global last_date, last_user
