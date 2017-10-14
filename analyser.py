@@ -348,10 +348,8 @@ def improveMsgContents(msg: str, include_ampersand=True):
 
 def improveChannelMentions(msg: str):
     # Use regex to find channel mentions
-    # TODO improve/fix with |
+    # Format 1, no pipe
     mentions = re.finditer('<#C([^|>]+)>', msg)
-
-    # Map channel IDs to channel names
     for match in mentions:
         new_text = "#"
         id = match.group()[2:-1]
@@ -363,13 +361,22 @@ def improveChannelMentions(msg: str):
 
         msg = msg.replace(match.group(), new_text)
 
+    # Format 2, pipe
+    mentions = re.finditer('<#C([^|]+)[^>]+>', msg)
+    for match in mentions:
+        new_text = match.group()[2:-1]
+        new_text = new_text.split("|")
+        new_text = new_text[1]
+        new_text = "#" + new_text
+
+        msg = msg.replace(match.group(), new_text)
+
     return msg
 
 def improveUserMentions(msg: str, include_ampersand=True):
     # Use regex to find user mentions
+    # Format 1, no pipe
     mentions = re.finditer('<@U([^|>]+)>', msg)
-
-    # Map user ID to name
     for match in mentions:
         new_text = ""
         if include_ampersand:
@@ -383,6 +390,16 @@ def improveUserMentions(msg: str, include_ampersand=True):
             new_text += users_map[ID]
         else:
             new_text += ID
+
+        msg = msg.replace(match.group(), new_text)
+
+    # Format 2, pipe
+    mentions = re.finditer('<@U([^|]+)[^>]+>', msg)
+    for match in mentions:
+        new_text = match.group()[2:-1]
+        new_text = new_text.split("|")
+        new_text = new_text[1]
+        new_text = "@" + new_text
 
         msg = msg.replace(match.group(), new_text)
 
