@@ -22,7 +22,9 @@ SUBTYPES_REDUCED_PREFIX = ('bot_add',
                            'bot_remove',
                            'reminder_add')
 
-SUBTYPES_CUSTOM = ('me_message', ) # Because python is weird with single element sets
+SUBTYPES_CUSTOM = ('me_message',
+                   'reply_broadcast',
+                   'thread_broadcast')
 
 SLACK_HTML_ENCODING = {'&amp;': '&',
                        '&lt;': '<',
@@ -325,6 +327,14 @@ def formatMsgContentsCustomType(msg, subtype, username):
         if COMPACT_EXPORT or last_user != username:
             ret += username + ": "
         ret += "_" + formatMsgContents(msg) + "_"
+
+    elif subtype == 'thread_broadcast':
+        ret += username + " broadcast a thread:\n" + INDENTATION + improveMsgContents(msg['text'])
+
+    elif subtype == 'reply_broadcast':
+        ret += username + " replied to a thread"
+        if 'plain_text' in msg:
+            ret += ":\n" + INDENTATION + improveMsgContents(msg['plain_text'])
 
     return ret
 

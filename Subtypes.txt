@@ -10,6 +10,7 @@ channel_purpose
 channel_topic
 channel_unarchive
 me_message # Benefits from possible RTF format
+pinned_item
 reminder_add
 slackbot_response
 
@@ -17,6 +18,5 @@ NOT DONE:
 file_comment
 file_mention
 file_share
-pinned_item
 reply_broadcast
 thread_broadcast
