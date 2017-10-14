@@ -9,6 +9,7 @@ channel_name
 channel_purpose
 channel_topic
 channel_unarchive
+me_message # Benefits from possible RTF format
 reminder_add
 slackbot_response
 
@@ -19,6 +20,3 @@ file_share
 pinned_item
 reply_broadcast
 thread_broadcast
-
-REQUIRES RTF:
-me_message

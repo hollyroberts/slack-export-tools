@@ -15,7 +15,8 @@ SUBTYPES_NO_PREFIX = ('channel_archive',
                       'channel_name',
                       'channel_purpose',
                       'channel_topic',
-                      'channel_unarchive')
+                      'channel_unarchive',
+                      'pinned_item')
 
 SUBTYPES_REDUCED_PREFIX = ('bot_add',
                            'bot_remove',
@@ -297,7 +298,7 @@ def formatMsgJSON(msg):
 
     # Do stuff based on the subtype
     if subtype in SUBTYPES_NO_PREFIX:
-        body_str += improveMsgContents(msg['text'], include_ampersand=False)
+        body_str += formatMsgContents(msg, include_ampersand=False)
     elif subtype in SUBTYPES_REDUCED_PREFIX:
         body_str += username + " " + formatMsgContents(msg)
     elif subtype in SUBTYPES_CUSTOM:
@@ -327,27 +328,27 @@ def formatMsgContentsCustomType(msg, subtype, username):
 
     return ret
 
-def formatMsgContents(msg):
+def formatMsgContents(msg, include_ampersand=True):
     # If text is available (it sometimes might not be) then add it first
     # If attachments exist then add them
-    ret = ""
+    ret_str = ""
 
     # Plain text
     if 'text' in msg:
-        ret += improveMsgContents(msg['text'])
+        ret_str += improveMsgContents(msg['text'], include_ampersand)
 
     # Attachments
     if 'attachments' in msg:
         attachments = msg['attachments']
 
         for a in attachments:
-            ret += formatMsgAttachment(a)
+            ret_str += formatMsgAttachment(a)
 
     # Last attachment should not add a newline, this is the easiest way to get rid of it
-    if ret.endswith("\n"):
-        ret = ret[:-1]
+    if ret_str.endswith("\n"):
+        ret_str = ret_str[:-1]
 
-    return ret
+    return ret_str
 
 def formatMsgAttachment(a):
     body_str = ""
@@ -526,16 +527,16 @@ def outputSubtypes():
 
 def outputTypes():
     # On the test data set, only 'message' is contained, so this is fairly redundant atm
-    subtypes = set()
+    types = set()
 
     print("Scanning history")
     for channel in channel_data:
         for message in channel_data[channel]:
             if "type" in message:
-                subtypes.add(message['type'])
+                types.add(message['type'])
 
     print("Types found in message history:")
-    for i in sorted(subtypes):
+    for i in sorted(types):
         print(i)
 
 # Misc.
