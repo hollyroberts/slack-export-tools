@@ -27,6 +27,10 @@ SLACK_HTML_ENCODING = {'&amp;': '&',
                        '&lt;': '<',
                        '&gt;': '>'}
 
+ATTACHMENT_FIELDS = ('subtext',
+                     'title',
+                     'text')
+
 INDENTATION = "        "  # 8 spaces
 INDENTATION_SHORT = "     "  # 5 spaces
 
@@ -336,14 +340,33 @@ def getMsgContents(msg):
         attachments = msg['attachments']
 
         for a in attachments:
+            # Only process attachments that contain at least 1 supported field
+            contains_field = False
+            for field in ATTACHMENT_FIELDS:
+                if field in a:
+                    contains_field = True
+                    break
+
+            if not contains_field:
+                continue
+
+            # Pretext should appear as standard text
             if 'pretext' in a:
                 ret += improveMsgContents(a['pretext'])
 
+            # Denote the attachment by adding A: underneath the timestamp
+            if not COMPACT_EXPORT:
+                ret += "\n"
             ret += "\n" + INDENTATION_SHORT + "A: "
+
+            # Add title (include link if exists
+            if 'title' in a:
+                ret += improveMsgContents(a['title']) + "\n" + INDENTATION
 
             if 'text' in a:
                 ret += improveMsgContents(a['text']) + "\n"
 
+    # Last attachment should not add a newline, this is the easiest way to get rid of it
     if ret.endswith("\n"):
         ret = ret[:-1]
 
