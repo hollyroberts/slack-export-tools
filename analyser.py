@@ -23,8 +23,9 @@ SUBTYPES_REDUCED_PREFIX = ('bot_add',
                            'reminder_add')
 
 SUBTYPES_CUSTOM = ('me_message',
-                   'reply_broadcast',
-                   'thread_broadcast')
+                   'reply_broadcast')
+
+SUBTYPES_IGNORE = ('thread_broadcast',)
 
 SLACK_HTML_ENCODING = {'&amp;': '&',
                        '&lt;': '<',
@@ -299,7 +300,9 @@ def formatMsgJSON(msg):
         prefix_str = "\n" + prefix_str
 
     # Do stuff based on the subtype
-    if subtype in SUBTYPES_NO_PREFIX:
+    if subtype in SUBTYPES_IGNORE:
+        return ""
+    elif subtype in SUBTYPES_NO_PREFIX:
         body_str += formatMsgContents(msg, include_ampersand=False)
     elif subtype in SUBTYPES_REDUCED_PREFIX:
         body_str += username + " " + formatMsgContents(msg)
@@ -307,6 +310,10 @@ def formatMsgJSON(msg):
         body_str += formatMsgContentsCustomType(msg, subtype, username)
     else:
         # Standard message
+        # Do not process messages with thread_ts, they will either be processed by reply_broadcast or the parent message
+        if 'thread_ts' in msg:
+            return ""
+
         # If export mode is not compact, then display name if new user
         if COMPACT_EXPORT:
             body_str += username + ": "
@@ -327,9 +334,6 @@ def formatMsgContentsCustomType(msg, subtype, username):
         if COMPACT_EXPORT or last_user != username:
             ret += username + ": "
         ret += "_" + formatMsgContents(msg) + "_"
-
-    elif subtype == 'thread_broadcast':
-        ret += username + " broadcast a thread:\n" + INDENTATION + improveMsgContents(msg['text'])
 
     elif subtype == 'reply_broadcast':
         ret += username + " replied to a thread"

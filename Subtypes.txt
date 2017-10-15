@@ -14,9 +14,13 @@ pinned_item
 reminder_add
 slackbot_response
 
+CAN BE IMPROVED SIGNIFICANTLY:
+reply_broadcast
+
+NOT SUPPORTED:
+thread_broadcast - Seems to be triggered before a reply_broadcast, unsure of purpose
+
 NOT DONE:
 file_comment
 file_mention
 file_share
-reply_broadcast
-thread_broadcast
