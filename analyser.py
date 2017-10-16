@@ -40,6 +40,9 @@ ATTACHMENT_FIELDS = ('fields',
 INDENTATION = "        "  # 8 spaces
 INDENTATION_SHORT = "     "  # 5 spaces
 
+TRUE_STRINGS = ['T', 'TRUE']
+FALSE_STRINGS = ['F', 'FALSE']
+
 # Each switch maps to a 2 element array
 # The first element is boolean and determines whether the switch requires additional data
 # If not the default data is contained in the second item
@@ -56,9 +59,6 @@ SWITCHES = {}
 SOURCE_DIR = ""
 EXPORT_DIR = ""
 COMPACT_EXPORT = False
-
-TRUE_STRINGS = ['T', 'TRUE']
-FALSE_STRINGS = ['F', 'FALSE']
 
 # VARS
 # Slack data
@@ -77,7 +77,7 @@ last_user = None
 def loadJSONFile(file):
     loc = SOURCE_DIR + file
 
-    if (LOG_MODES.index(LOG_MODE) >= LOG_MODES.index("HIGH")):
+    if shouldLog("HIGH"):
         print("Reading '" + loc + "'")
 
     file = open(loc, "r", encoding="utf8")
@@ -99,13 +99,13 @@ def loadSlack():
     users_map = loadUserMapping()
     users = sorted(list(users_map.values()))
 
-    if (LOG_MODES.index(LOG_MODE) >= LOG_MODES.index("MEDIUM")):
+    if shouldLog("MEDIUM"):
         print("Users and channels loaded")
         print("Loading channel data")
 
     # Load channel data
     for channel in channels:
-        if (LOG_MODES.index(LOG_MODE) >= LOG_MODES.index("MEDIUM")):
+        if shouldLog("MEDIUM"):
             print("Loading channel data for #" + channel)
 
         channel_data[channel] = loadChannelData(channel)
@@ -238,7 +238,7 @@ def exportChannelData(folder_loc: str, as_json=False):
         else:
             loc += ".txt"
 
-        if (LOG_MODES.index(LOG_MODE) >= LOG_MODES.index("MEDIUM")):
+        if shouldLog("MEDIUM"):
             print("Exporting #" + channel + " to '" + loc + "'")
 
         if (as_json):
@@ -569,6 +569,12 @@ def strToBool(s: str):
         return False
     else:
         print("Could not interpret '" + s + "' as boolean, assuming FALSE")
+        return False
+
+def shouldLog(importance: str):
+    if LOG_MODES.index(LOG_MODE) >= LOG_MODES.index(importance):
+        return True
+    else:
         return False
 
 # Runtime
