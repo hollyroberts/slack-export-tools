@@ -6,6 +6,7 @@
 *.exe
 *.o
 *.so
+*.pyc
 
 # Packages #
 ############
@@ -42,4 +43,5 @@ Thumbs.db
 /export_json
 .idea
 
+src/slack_data.py
 Phrases to check.txt

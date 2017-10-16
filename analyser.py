@@ -1,14 +1,12 @@
 # IMPORTS
 import json
 import os
-import sys
 import datetime
 import re
 
-# CONSTANTS
-LOG_MODES = ("LOW", "MEDIUM", "HIGH")
-LOG_MODE = "LOW"
+from src.log import *
 
+# CONSTANTS
 SUBTYPES_NO_PREFIX = ('channel_archive',
                       'channel_join',
                       'channel_leave',
@@ -77,8 +75,7 @@ last_user = None
 def loadJSONFile(file):
     loc = SOURCE_DIR + file
 
-    if shouldLog("HIGH"):
-        print("Reading '" + loc + "'")
+    log.log(logModes.HIGH, "Reading '" + loc + "'")
 
     file = open(loc, "r", encoding="utf8")
     data = file.read()
@@ -99,15 +96,13 @@ def loadSlack():
     users_map = loadUserMapping()
     users = sorted(list(users_map.values()))
 
-    if shouldLog("MEDIUM"):
+    if log.shouldLog(logModes.MEDIUM):
         print("Users and channels loaded")
         print("Loading channel data")
 
     # Load channel data
     for channel in channels:
-        if shouldLog("MEDIUM"):
-            print("Loading channel data for #" + channel)
-
+        log.log(logModes.MEDIUM, "Loading channel data for #" + channel)
         channel_data[channel] = loadChannelData(channel)
 
     print("Slack loaded")
@@ -238,8 +233,7 @@ def exportChannelData(folder_loc: str, as_json=False):
         else:
             loc += ".txt"
 
-        if shouldLog("MEDIUM"):
-            print("Exporting #" + channel + " to '" + loc + "'")
+        log.log(logModes.MEDIUM, "Exporting #" + channel + " to '" + loc + "'")
 
         if (as_json):
             data = json.dumps(data, indent=4)
@@ -571,12 +565,6 @@ def strToBool(s: str):
         print("Could not interpret '" + s + "' as boolean, assuming FALSE")
         return False
 
-def shouldLog(importance: str):
-    if LOG_MODES.index(LOG_MODE) >= LOG_MODES.index(importance):
-        return True
-    else:
-        return False
-
 # Runtime
 def loadArgs():
     interpretArgs(sys.argv)
@@ -644,19 +632,10 @@ def setSlackSource():
         SOURCE_DIR += "\\"
 
 def setLogMode():
-    global LOG_MODE
-
     if not 'l' in SWITCHES:
         return
 
-    if SWITCHES['l'].upper() not in LOG_MODES:
-        modes = ""
-        for i in LOG_MODES:
-            modes += i + ", "
-
-        sys.exit("Incorrect log mode specified. Please use one of the following: " + modes[:-2])
-
-    LOG_MODE = SWITCHES['l'].upper()
+    log.setModeStr(SWITCHES['l'])
 
 def setExportLocation():
     global EXPORT_DIR
