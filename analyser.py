@@ -1,10 +1,8 @@
 # IMPORTS
-import json
-import os
 import datetime
 import re
 
-from src.log import *
+from src.slack import *
 
 # CONSTANTS
 SUBTYPES_NO_PREFIX = ('channel_archive',
@@ -59,85 +57,13 @@ EXPORT_DIR = ""
 COMPACT_EXPORT = False
 
 # VARS
-# Slack data
-users = []
-users_map = {}
-channels = []
-channel_map = {}
-channel_data = {}
+slack = None
 
 # Export state
 last_date = None
 last_user = None
 
 # FUNCS
-# Loading
-def loadJSONFile(file):
-    loc = SOURCE_DIR + file
-
-    log.log(logModes.HIGH, "Reading '" + loc + "'")
-
-    file = open(loc, "r", encoding="utf8")
-    data = file.read()
-    data = json.loads(data)
-    file.close()
-
-    return data
-
-def loadSlack():
-    global users, users_map
-    global channels, channel_map, channel_data
-
-    print("Loading slack from: " + SOURCE_DIR)
-
-    # Load channels and users
-    channel_map = loadChannelMap()
-    channels = sorted(channel_map.values())
-    users_map = loadUserMapping()
-    users = sorted(list(users_map.values()))
-
-    if log.shouldLog(logModes.MEDIUM):
-        print("Users and channels loaded")
-        print("Loading channel data")
-
-    # Load channel data
-    for channel in channels:
-        log.log(logModes.MEDIUM, "Loading channel data for #" + channel)
-        channel_data[channel] = loadChannelData(channel)
-
-    print("Slack loaded")
-
-def loadChannelMap():
-    channel_data = loadJSONFile("channels.json")
-
-    # Build the array of channel names
-    map = {}
-    for i in channel_data:
-        map[i['id']] = i['name']
-
-    return map
-
-def loadChannelData(channel: str):
-    data = []
-
-    # Use os.listdir to find all files in the subdirectory
-    # This should be in chronological order, due to the naming scheme used by slack
-    for file in os.listdir(SOURCE_DIR + channel):
-        if file.endswith(".json"):
-            file_data = loadJSONFile(channel + "\\" + file)
-            data += file_data
-
-    return data
-
-def loadUserMapping():
-    user_data = loadJSONFile("users.json")
-
-    # Build the map from id --> name
-    users = {}
-    for i in user_data:
-        users[i['id']] = i['name']
-
-    return users
 
 # Statistics
 def calculateScores(users, channels):
@@ -165,7 +91,7 @@ def calculateScores(users, channels):
     return user_scores, channel_scores
 
 def calculateFileScores(file_loc, users):
-    data = loadJSONFile(file_loc)
+    data = io.loadJSONFile(file_loc)
     user_scores = {}
 
     print(file_loc)
@@ -224,18 +150,18 @@ def exportChannelData(folder_loc: str, as_json=False):
     if not os.path.exists(folder_loc):
         os.makedirs(folder_loc)
 
-    for channel in channels:
-        data = channel_data[channel]
+    for channel in slack.channels:
+        data = slack.channel_data[channel]
 
         loc = folder_loc + "\\#" + channel
-        if (as_json):
+        if as_json:
             loc += ".json"
         else:
             loc += ".txt"
 
         log.log(logModes.MEDIUM, "Exporting #" + channel + " to '" + loc + "'")
 
-        if (as_json):
+        if as_json:
             data = json.dumps(data, indent=4)
         else:
             data = formatChannelJSON(data)
@@ -273,7 +199,7 @@ def formatMsgJSON(msg):
     time = dt.time()
 
     # Denote change in date if new date
-    if last_date == None or last_date < date:
+    if last_date is None or last_date < date:
         prefix_str += " -- " + str(date.day) + "/" + str(date.month) + "/" + str(date.year) + " -- \n"
         if not COMPACT_EXPORT:
             prefix_str = "\n" + prefix_str + "\n"
@@ -445,8 +371,8 @@ def improveChannelMentions(msg: str):
         new_text = "#"
         id = match.group()[2:-1]
 
-        if id in channel_map:
-            new_text += channel_map[id]
+        if id in slack.channel_map:
+            new_text += slack.channel_map[id]
         else:
             new_text += id
 
@@ -477,8 +403,8 @@ def improveUserMentions(msg: str, include_ampersand=True):
 
         if ID == 'SLACKBOT':
             new_text += "Slackbot"
-        elif ID in users_map:
-            new_text += users_map[ID]
+        elif ID in slack.users_map:
+            new_text += slack.users_map[ID]
         else:
             new_text += ID
 
@@ -503,12 +429,12 @@ def getUserName(msg):
         if username == "USLACKBOT":
             return 'Slackbot'
         else:
-            return users_map[username]
+            return slack.users_map[username]
 
     if 'username' in msg:
         username = msg['username']
-        if username in users_map:
-            return users_map[username]
+        if username in slack.users_map:
+            return slack.users_map[username]
         else:
             return username
 
@@ -517,15 +443,15 @@ def getUserName(msg):
 # Output info
 def outputUsers():
     print("List of users:")
-    for i in users:
+    for i in slack.users:
         print(i)
 
 def outputSubtypes():
     subtypes = set()
 
     print("Scanning history")
-    for channel in channel_data:
-        for message in channel_data[channel]:
+    for channel in slack.channel_data:
+        for message in slack.channel_data[channel]:
             if "subtype" in message:
                 subtypes.add(message['subtype'])
 
@@ -538,8 +464,8 @@ def outputTypes():
     types = set()
 
     print("Scanning history")
-    for channel in channel_data:
-        for message in channel_data[channel]:
+    for channel in slack.channel_data:
+        for message in slack.channel_data[channel]:
             if "type" in message:
                 types.add(message['type'])
 
@@ -584,7 +510,7 @@ def interpretArgs(argv):
 
         # Switch must be valid
         switch = argv[i][1:]
-        if not switch in SWITCH_DATA:
+        if switch not in SWITCH_DATA:
             sys.exit("Incorrect args. Switch '" + switch + "' not found")
 
         # Switch must not have been added already
@@ -621,7 +547,7 @@ def interpretArgs(argv):
 def setSlackSource():
     global SOURCE_DIR
 
-    if not 'i' in SWITCHES:
+    if 'i' not in SWITCHES:
         return
 
     if SWITCHES['i'] == "":
@@ -631,8 +557,10 @@ def setSlackSource():
     if not SOURCE_DIR.endswith("\\"):
         SOURCE_DIR += "\\"
 
+    io.source_dir = SOURCE_DIR
+
 def setLogMode():
-    if not 'l' in SWITCHES:
+    if 'l' not in SWITCHES:
         return
 
     log.setModeStr(SWITCHES['l'])
@@ -640,7 +568,7 @@ def setLogMode():
 def setExportLocation():
     global EXPORT_DIR
 
-    if not 'o' in SWITCHES:
+    if 'o' not in SWITCHES:
         return
 
     if SWITCHES['o'] == "":
@@ -650,15 +578,17 @@ def setExportLocation():
     if not EXPORT_DIR.endswith("\\"):
         EXPORT_DIR += "\\"
 
+    io.export_dir = EXPORT_DIR
+
 def setExportMode():
     global COMPACT_EXPORT
 
-    if not 'c' in SWITCHES:
+    if 'c' not in SWITCHES:
         return
 
     COMPACT_EXPORT = strToBool(SWITCHES['c'])
 
 # START OF PROGRAM
 loadArgs()
-loadSlack()
+slack = slackData()
 exportChosenOptions()
