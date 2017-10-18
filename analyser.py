@@ -1,6 +1,7 @@
 from src.slack import *
 from src.export import *
 
+# CONSTANTS
 # Each switch maps to a 2 element array
 # The first element is boolean and determines whether the switch requires additional data
 # If not the default data is contained in the second item
@@ -12,13 +13,12 @@ SWITCH_DATA = {'c': [True, ''],
                'l': [True, ''],
                'o': [True, '']}
 
-# RUNTIME OPTIONS
+# Vars
 SWITCHES = {}
-EXPORT_DIR = ""
 
 # FUNCS
 
-# Statistics
+# Statistics (legacy code)
 def calculateScores(users, channels):
     # Build arrays for users and channels
     user_scores = {}
@@ -200,27 +200,21 @@ def setLogMode():
     log.setModeStr(SWITCHES['l'])
 
 def setExportLocation():
-    global EXPORT_DIR
+    dir = ""
 
-    if 'o' not in SWITCHES:
-        return
+    if 'o' in SWITCHES and SWITCHES['o'] != "":
+        dir = SWITCHES['o']
+        if not dir.endswith("\\"):
+            dir += "\\"
 
-    if SWITCHES['o'] == "":
-        return
-
-    EXPORT_DIR = SWITCHES['o']
-    if not EXPORT_DIR.endswith("\\"):
-        EXPORT_DIR += "\\"
-
-    io.export_dir = EXPORT_DIR
+    io.export_dir = dir
 
 def setExportMode():
-    global COMPACT_EXPORT
+    mode = False
+    if 'c' in SWITCHES:
+        mode = misc.strToBool(SWITCHES['c'])
 
-    if 'c' not in SWITCHES:
-        return
-
-    COMPACT_EXPORT = misc.strToBool(SWITCHES['c'])
+    export.COMPACT_EXPORT = mode
 
 # START OF PROGRAM
 loadArgs()
