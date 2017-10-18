@@ -12,6 +12,24 @@ class slackData():
 
         self.__loadSlack()
 
+    def getUserName(self, msg):
+        if 'user' in msg:
+            username = msg['user']
+
+            if username == "USLACKBOT":
+                return 'Slackbot'
+            else:
+                return self.users_map[username]
+
+        if 'username' in msg:
+            username = msg['username']
+            if username in self.users_map:
+                return self.users_map[username]
+            else:
+                return username
+
+        return "Unknown"
+
     def __loadSlack(self):
         global users, users_map
         global channels, channel_map, channel_data

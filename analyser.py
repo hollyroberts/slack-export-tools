@@ -213,7 +213,7 @@ def formatMsgJSON(msg):
     subtype = None
     if 'subtype' in msg:
         subtype = msg['subtype']
-    username = getUserName(msg)
+    username = slack.getUserName(msg)
 
     # If not compact and message is new (and date has not changed), add a newline to the prefix
     if not COMPACT_EXPORT and last_user != username and prefix_str == "\n":
@@ -421,24 +421,6 @@ def improveUserMentions(msg: str, include_ampersand=True):
         msg = msg.replace(match.group(), new_text)
 
     return msg
-
-def getUserName(msg):
-    if 'user' in msg:
-        username = msg['user']
-
-        if username == "USLACKBOT":
-            return 'Slackbot'
-        else:
-            return slack.users_map[username]
-
-    if 'username' in msg:
-        username = msg['username']
-        if username in slack.users_map:
-            return slack.users_map[username]
-        else:
-            return username
-
-    return "Unknown"
 
 # Output info
 def outputUsers():
