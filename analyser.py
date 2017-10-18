@@ -52,7 +52,6 @@ SWITCH_DATA = {'c': [True, ''],
 
 # RUNTIME OPTIONS
 SWITCHES = {}
-SOURCE_DIR = ""
 EXPORT_DIR = ""
 COMPACT_EXPORT = False
 
@@ -78,7 +77,7 @@ def calculateScores(users, channels):
 
     # Iterate over channels
     for channel in channels:
-        for file in os.listdir(SOURCE_DIR + channel):
+        for file in os.listdir(io.source_dir + channel):
             if file.endswith(".json"):
                 # Process the file, get the scores for each user
                 file_user_scores = calculateFileScores(channel + "\\" + file, users)
@@ -527,19 +526,14 @@ def interpretArgs(argv):
         i += 1
 
 def setSlackSource():
-    global SOURCE_DIR
+    if 'i' not in SWITCHES or SWITCHES['i'] == "":
+        source_dir = ""
+    else:
+        source_dir = SWITCHES['i']
+        if not source_dir.endswith("\\"):
+            source_dir += "\\"
 
-    if 'i' not in SWITCHES:
-        return
-
-    if SWITCHES['i'] == "":
-        return
-
-    SOURCE_DIR = SWITCHES['i']
-    if not SOURCE_DIR.endswith("\\"):
-        SOURCE_DIR += "\\"
-
-    io.source_dir = SOURCE_DIR
+    io.source_dir = source_dir
 
 def setLogMode():
     if 'l' not in SWITCHES:
