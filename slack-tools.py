@@ -95,7 +95,7 @@ def exportChosenOptions():
         export.exportChannelData(slack, io.export_dir + SWITCHES['e'])
 
     if 'ej' in SWITCHES:
-        export.exportChannelData(io.export_dir + SWITCHES['ej'], as_json=True)
+        export.exportChannelData(slack, io.export_dir + SWITCHES['ej'], as_json=True)
 
 # Output info
 def outputUsers():

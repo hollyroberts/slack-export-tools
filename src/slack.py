@@ -57,6 +57,9 @@ class slackData():
             self.channel_data[channel] = data
             self.channel_threads[channel] = self.__loadChannelThreads(data)
 
+        # Sort threads
+        print(self.channel_threads)
+
         print("Slack loaded")
 
     def __loadChannelMap(self):
@@ -82,7 +85,7 @@ class slackData():
         return data
 
     def __loadChannelThreads(self, data):
-        msgs = []
+        msgs = {}
 
         for msg in data:
             if not 'thread_ts' in msg:
@@ -90,7 +93,7 @@ class slackData():
 
             # Do not save the parent
             if msg['thread_ts'] != msg['ts']:
-                msgs.append(msg)
+                msgs[msg['ts']] = msg
 
         return msgs
 

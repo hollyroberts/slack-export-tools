@@ -97,7 +97,9 @@ class export():
 
     @staticmethod
     def __formatMsgJSON(msg):
-        global last_date, last_user
+        # Do not process thread child messages, they will either be processed by reply_broadcast or the parent message
+        if 'thread_ts' in msg and msg['thread_ts'] != msg['ts']:
+            return ""
 
         prefix_str = "\n"
 
@@ -139,10 +141,6 @@ class export():
             body_str += export.__formatMsgContentsCustomType(msg, subtype, username)
         else:
             # Standard message
-            # Do not process messages with thread_ts, they will either be processed by reply_broadcast or the parent message
-            if 'thread_ts' in msg:
-                return ""
-
             # If export mode is not compact, then display name if new user
             if export.COMPACT_EXPORT:
                 body_str += username + ": "
@@ -150,6 +148,10 @@ class export():
                 body_str = export.INDENTATION + username + ":\n" + body_str
 
             body_str += export.__formatMsgContents(msg)
+
+        # If message contains replies, then add them as a thread TODO
+        if 'thread_ts' in msg:
+            pass
 
         # Update last_user
         export.last_user = username

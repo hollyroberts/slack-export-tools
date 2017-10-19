@@ -5,4 +5,6 @@ Handle attachments
 Save all messages with thread_ts that are not parents
 When a parent message is encountered, use this list to insert the thread messages
 
+Refactor export to include io.py
+
 Perhaps convert all HTML chars at the very very end?
