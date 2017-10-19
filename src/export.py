@@ -73,7 +73,7 @@ class export():
             if as_json:
                 data = json.dumps(data, indent=4)
             else:
-                data = export.__formatChannelJSON(data)
+                data = export.formatChannelJSON(data)
 
             file = open(loc, "w", encoding="utf8")
             file.write(data)
@@ -82,7 +82,7 @@ class export():
         print("Data exported")
 
     @staticmethod
-    def __formatChannelJSON(raw_json):
+    def formatChannelJSON(raw_json):
         # Reset last date/user
         export.last_date = None
         export.last_user = None

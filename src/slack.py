@@ -4,11 +4,17 @@ from src.io import *
 
 class slackData():
     def __init__(self):
+        # User data
         self.users = []
         self.users_map = {}
+
+        # Channel data
         self.channels = []
         self.channel_map = {}
         self.channel_data = {}
+
+        # Threaded messages
+        self.channel_threads = {}
 
         self.__loadSlack()
 
@@ -31,9 +37,6 @@ class slackData():
         return "Unknown"
 
     def __loadSlack(self):
-        global users, users_map
-        global channels, channel_map, channel_data
-
         print("Loading slack from: " + io.source_dir)
 
         # Load channels and users
@@ -46,10 +49,13 @@ class slackData():
             print("Users and channels loaded")
             print("Loading channel data")
 
-        # Load channel data
+        # Load channel data and threaded messages
         for channel in self.channels:
             log.log(logModes.MEDIUM, "Loading channel data for #" + channel)
-            self.channel_data[channel] = self.__loadChannelData(channel)
+            data = self.__loadChannelData(channel)
+
+            self.channel_data[channel] = data
+            self.channel_threads[channel] = self.__loadChannelThreads(data)
 
         print("Slack loaded")
 
@@ -74,6 +80,19 @@ class slackData():
                 data += file_data
 
         return data
+
+    def __loadChannelThreads(self, data):
+        msgs = []
+
+        for msg in data:
+            if not 'thread_ts' in msg:
+                continue
+
+            # Do not save the parent
+            if msg['thread_ts'] != msg['ts']:
+                msgs.append(msg)
+
+        return msgs
 
     def __loadUserMapping(self):
         user_data = io.loadJSONFile("users.json")
