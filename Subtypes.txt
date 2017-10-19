@@ -18,7 +18,7 @@ CAN BE IMPROVED SIGNIFICANTLY:
 reply_broadcast
 
 NOT SUPPORTED:
-thread_broadcast - Seems to be triggered before a reply_broadcast, unsure of purpose
+thread_broadcast - notifies thread that msg was broadcast, possibly add support for
 
 NOT DONE:
 file_comment

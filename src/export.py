@@ -7,14 +7,10 @@ from src.log import *
 from src.misc import *
 
 class export():
-    last_data = None
-    last_user = None
-    slack = None
-
+    # CONSTANTS
     # Export settings, probably refactor
     COMPACT_EXPORT = False
 
-    # Constants
     SUBTYPES_NO_PREFIX = ('channel_archive',
                           'channel_join',
                           'channel_leave',
@@ -46,21 +42,21 @@ class export():
     INDENTATION = "        "  # 8 spaces
     INDENTATION_SHORT = "     "  # 5 spaces
 
-    def __init__(self):
-        pass
+    def __init__(self, slack_json):
+        self.slack = slack_json
+        self.__currentChannel = None
+        self.__last_date = None
+        self.__last_user = None
 
-    @staticmethod
-    def exportChannelData(slack, folder_loc: str, as_json=False):
+    def exportChannelData(self, folder_loc: str, as_json=False):
         print("Exporting channel data to '" + folder_loc + "'")
-
-        # Slack object to retrieve data from
-        export.slack = slack
 
         if not os.path.exists(folder_loc):
             os.makedirs(folder_loc)
 
-        for channel in slack.channels:
-            data = slack.channel_data[channel]
+        for channel in self.slack.channels:
+            self.__currentChannel = channel
+            data = self.slack.channel_data[channel]
 
             loc = folder_loc + "\\#" + channel
             if as_json:
@@ -73,34 +69,44 @@ class export():
             if as_json:
                 data = json.dumps(data, indent=4)
             else:
-                data = export.formatChannelJSON(data)
+                data = self.formatChannelJSON(data)
 
             file = open(loc, "w", encoding="utf8")
             file.write(data)
             file.close()
 
+            # Clear the record of progress
+            self.__currentChannel = None
+
         print("Data exported")
 
-    @staticmethod
-    def formatChannelJSON(raw_json):
+    def formatChannelJSON(self, raw_json):
         # Reset last date/user
-        export.last_date = None
-        export.last_user = None
+        self.__last_date = None
+        self.__last_user = None
 
         # Build and return data
         formatted_data = []
         for msg in raw_json:
-            formatted_data.append(export.__formatMsgJSON(msg))
+            # Do not process thread child messages, they will either be processed by reply_broadcast or the parent message
+            if not ('thread_ts' in msg and msg['thread_ts'] != msg['ts']):
+                formatted_data.append(self.__formatMsgJSON(msg))
+
         formatted_data = "".join(formatted_data)
 
         return formatted_data.strip()
 
-    @staticmethod
-    def __formatMsgJSON(msg):
-        # Do not process thread child messages, they will either be processed by reply_broadcast or the parent message
-        if 'thread_ts' in msg and msg['thread_ts'] != msg['ts']:
-            return ""
+    def __addThreadMsgs(self, parent):
+        thread_str = ""
 
+        # Iterate over replies
+        for child in parent['replies']:
+            child_ts = child['ts']
+            child_msg = self.slack.channel_threads[self.__currentChannel][child_ts]
+
+        return thread_str
+
+    def __formatMsgJSON(self, msg):
         prefix_str = "\n"
 
         # Get timestamp
@@ -110,12 +116,12 @@ class export():
         time = dt.time()
 
         # Denote change in date if new date
-        if export.last_date is None or export.last_date < date:
+        if self.__last_date is None or self.__last_date < date:
             prefix_str += " -- " + str(date.day) + "/" + str(date.month) + "/" + str(date.year) + " -- \n"
             if not export.COMPACT_EXPORT:
                 prefix_str = "\n" + prefix_str + "\n"
 
-            export.last_date = date
+            self.__last_date = date
 
         # Timestamp
         body_str = "[" + misc.padInt(time.hour) + ":" + misc.padInt(time.minute) + "] "
@@ -124,72 +130,71 @@ class export():
         subtype = None
         if 'subtype' in msg:
             subtype = msg['subtype']
-        username = export.slack.getUserName(msg)
+        username = self.slack.getUserName(msg)
 
         # If not compact and message is new (and date has not changed), add a newline to the prefix
-        if not export.COMPACT_EXPORT and export.last_user != username and prefix_str == "\n":
+        if not export.COMPACT_EXPORT and self.__last_user != username and prefix_str == "\n":
             prefix_str = "\n" + prefix_str
 
         # Do stuff based on the subtype
         if subtype in export.SUBTYPES_IGNORE:
             return ""
         elif subtype in export.SUBTYPES_NO_PREFIX:
-            body_str += export.__formatMsgContents(msg, include_ampersand=False)
+            body_str += self.__formatMsgContents(msg, include_ampersand=False)
         elif subtype in export.SUBTYPES_REDUCED_PREFIX:
-            body_str += username + " " + export.__formatMsgContents(msg)
+            body_str += username + " " + self.__formatMsgContents(msg)
         elif subtype in export.SUBTYPES_CUSTOM:
-            body_str += export.__formatMsgContentsCustomType(msg, subtype, username)
+            body_str += self.__formatMsgContentsCustomType(msg, subtype, username)
         else:
             # Standard message
             # If export mode is not compact, then display name if new user
             if export.COMPACT_EXPORT:
                 body_str += username + ": "
-            elif export.last_user != username:
+            elif self.__last_user != username:
                 body_str = export.INDENTATION + username + ":\n" + body_str
 
-            body_str += export.__formatMsgContents(msg)
+            body_str += self.__formatMsgContents(msg)
 
-        # If message contains replies, then add them as a thread TODO
-        if 'thread_ts' in msg:
-            pass
+        # If message contains replies, then add them as a thread
+        if 'thread_ts' in msg and 'replies' in msg and len(msg['replies']) > 0:
+            body_str += export.INDENTATION_SHORT + "T:"
+            body_str += self. __addThreadMsgs(msg)
 
         # Update last_user
-        export.last_user = username
+        self.__last_user = username
 
         return prefix_str + body_str
 
-    @staticmethod
-    def __formatMsgContentsCustomType(msg, subtype, username):
+    def __formatMsgContentsCustomType(self, msg, subtype, username):
         ret = ""
 
         if subtype == 'me_message':
-            if export.COMPACT_EXPORT or export.last_user != username:
+            if export.COMPACT_EXPORT or self.__last_user != username:
                 ret += username + ": "
-            ret += "_" + export.__formatMsgContents(msg) + "_"
+            ret += "_" + self.__formatMsgContents(msg) + "_"
 
         elif subtype == 'reply_broadcast':
             ret += username + " replied to a thread"
             if 'plain_text' in msg:
-                ret += ":\n" + export.INDENTATION + export.__improveMsgContents(msg['plain_text'])
+                ret += ":\n" + export.INDENTATION + self.__improveMsgContents(msg['plain_text'])
 
         return ret
 
-    @staticmethod
-    def __formatMsgContents(msg, include_ampersand=True):
+    def __formatMsgContents(self, msg, include_ampersand=True):
         # If text is available (it sometimes might not be) then add it first
         # If attachments exist then add them
         ret_str = ""
 
         # Plain text
         if 'text' in msg:
-            ret_str += export.__improveMsgContents(msg['text'], include_ampersand)
+            ret_str += self.__improveMsgContents(msg['text'], include_ampersand)
 
         # Attachments
         if 'attachments' in msg:
             attachments = msg['attachments']
 
             for a in attachments:
-                ret_str += export.__formatMsgAttachment(a)
+                ret_str += self.__formatMsgAttachment(a)
 
         # Last attachment should not add a newline, this is the easiest way to get rid of it
         if ret_str.endswith("\n"):
@@ -197,8 +202,7 @@ class export():
 
         return ret_str
 
-    @staticmethod
-    def __formatMsgAttachment(a):
+    def __formatMsgAttachment(self, a):
         body_str = ""
         ret_str = ""
 
@@ -208,7 +212,7 @@ class export():
 
         # Pretext should appear as standard text
         if 'pretext' in a:
-            ret_str = export.__improveMsgContents(a['pretext'])
+            ret_str = self.__improveMsgContents(a['pretext'])
 
         # Add title (include link if exists)
         title_str = ""
@@ -221,7 +225,7 @@ class export():
             title_str = a['title']
 
         if title_str != "":
-            body_str += export.__improveMsgContents(title_str)
+            body_str += self.__improveMsgContents(title_str)
 
             # Text isn't required, but it's highly likely
             if 'text' in a:
@@ -229,7 +233,7 @@ class export():
 
         # Add text
         if 'text' in a:
-            body_str += export.__improveMsgContents(a['text'])
+            body_str += self.__improveMsgContents(a['text'])
 
             if not export.COMPACT_EXPORT:
                 body_str += "\n"
@@ -251,7 +255,7 @@ class export():
             field_str = field_str.strip()
 
             # Improve text and add to return string
-            field_str = export.__improveMsgContents(field_str)
+            field_str = self.__improveMsgContents(field_str)
             if body_str == "":
                 body_str = field_str
             else:
@@ -262,11 +266,10 @@ class export():
 
         return ret_str
 
-    @staticmethod
-    def __improveMsgContents(msg: str, include_ampersand=True):
+    def __improveMsgContents(self, msg: str, include_ampersand=True):
         # Make user and channel mentions readable
-        msg = export.__improveUserMentions(msg, include_ampersand)
-        msg = export.__improveChannelMentions(msg)
+        msg = self.__improveUserMentions(msg, include_ampersand)
+        msg = self.__improveChannelMentions(msg)
 
         # Replace HTML encoded characters
         for i in export.SLACK_HTML_ENCODING:
@@ -278,8 +281,7 @@ class export():
 
         return msg
 
-    @staticmethod
-    def __improveChannelMentions(msg: str):
+    def __improveChannelMentions(self, msg: str):
         # Use regex to find channel mentions
         # Format 1, no pipe
         mentions = re.finditer('<#C([^|>]+)>', msg)
@@ -287,8 +289,8 @@ class export():
             new_text = "#"
             id = match.group()[2:-1]
 
-            if id in export.slack.channel_map:
-                new_text += export.slack.channel_map[id]
+            if id in self.slack.channel_map:
+                new_text += self.slack.channel_map[id]
             else:
                 new_text += id
 
@@ -306,8 +308,7 @@ class export():
 
         return msg
 
-    @staticmethod
-    def __improveUserMentions(msg: str, include_ampersand=True):
+    def __improveUserMentions(self, msg: str, include_ampersand=True):
         # Use regex to find user mentions
         # Format 1, no pipe
         mentions = re.finditer('<@U([^|>]+)>', msg)
@@ -320,8 +321,8 @@ class export():
 
             if ID == 'SLACKBOT':
                 new_text += "Slackbot"
-            elif ID in export.slack.users_map:
-                new_text += export.slack.users_map[ID]
+            elif ID in self.slack.users_map:
+                new_text += self.slack.users_map[ID]
             else:
                 new_text += ID
 

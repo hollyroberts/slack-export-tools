@@ -91,11 +91,13 @@ def printFinalStats(user_scores, channel_scores):
 
 # Exporting
 def exportChosenOptions():
+    e = export(slack)
+
     if 'e' in SWITCHES:
-        export.exportChannelData(slack, io.export_dir + SWITCHES['e'])
+        e.exportChannelData(io.export_dir + SWITCHES['e'])
 
     if 'ej' in SWITCHES:
-        export.exportChannelData(slack, io.export_dir + SWITCHES['ej'], as_json=True)
+        e.exportChannelData(io.export_dir + SWITCHES['ej'], as_json=True)
 
 # Output info
 def outputUsers():

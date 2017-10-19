@@ -57,9 +57,6 @@ class slackData():
             self.channel_data[channel] = data
             self.channel_threads[channel] = self.__loadChannelThreads(data)
 
-        # Sort threads
-        print(self.channel_threads)
-
         print("Slack loaded")
 
     def __loadChannelMap(self):
