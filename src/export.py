@@ -41,6 +41,7 @@ class export():
 
     INDENTATION = "        "  # 8 spaces
     INDENTATION_SHORT = "     "  # 5 spaces
+    CHAR_PIPE = '|'
 
     def __init__(self, slack_json):
         self.slack = slack_json
@@ -96,6 +97,21 @@ class export():
 
         return formatted_data.strip()
 
+    def __addAttachments(self, msg):
+        ret_str = ""
+
+        if 'attachments' in msg:
+            attachments = msg['attachments']
+
+            for a in attachments:
+                ret_str += self.__formatMsgAttachment(a)
+
+        # Last attachment should not add a newline, this is the easiest way to get rid of it
+        if ret_str.endswith("\n"):
+            ret_str = ret_str[:-1]
+
+        return ret_str
+
     def __addThreadMsgs(self, parent):
         # Combine messages into array
         thread = []
@@ -110,7 +126,7 @@ class export():
 
         # Strip thread_str of leading/trailing whitespace, and add extra indentation
         thread_str = thread_str.strip()
-        thread_str = thread_str.replace("\n", "\n" + export.INDENTATION_SHORT + "|  ")
+        thread_str = thread_str.replace("\n", "\n" + export.INDENTATION_SHORT + export.CHAR_PIPE + "  ")
 
         return thread_str
 
@@ -187,12 +203,11 @@ class export():
             ret += username + " replied to a thread"
             if 'plain_text' in msg:
                 ret += ":\n" + export.INDENTATION + self.__improveMsgContents(msg['plain_text'])
+            ret += self.__addAttachments(msg)
 
         return ret
 
     def __formatMsgContents(self, msg, include_ampersand=True):
-        # If text is available (it sometimes might not be) then add it first
-        # If attachments exist then add them
         ret_str = ""
 
         # Plain text
@@ -200,15 +215,7 @@ class export():
             ret_str += self.__improveMsgContents(msg['text'], include_ampersand)
 
         # Attachments
-        if 'attachments' in msg:
-            attachments = msg['attachments']
-
-            for a in attachments:
-                ret_str += self.__formatMsgAttachment(a)
-
-        # Last attachment should not add a newline, this is the easiest way to get rid of it
-        if ret_str.endswith("\n"):
-            ret_str = ret_str[:-1]
+        ret_str += self.__addAttachments(msg)
 
         return ret_str
 
