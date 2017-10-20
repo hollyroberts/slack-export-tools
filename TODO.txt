@@ -2,10 +2,6 @@ Finish off work on message subtypes
 Handle attachments
 	Add text, then add all attachments
 
-Threads:
-    Add support for thread_broadcast
-    Possibly add support for attachments in reply_broadcast and thread_broadcast
-
 Refactor export to include io.py
 
 Perhaps convert all HTML chars at the very very end?

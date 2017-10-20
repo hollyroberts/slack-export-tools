@@ -27,8 +27,6 @@ class export():
     SUBTYPES_CUSTOM = ('me_message',
                        'reply_broadcast')
 
-    SUBTYPES_IGNORE = ('thread_broadcast',)
-
     SLACK_HTML_ENCODING = {'&amp;': '&',
                            '&lt;': '<',
                            '&gt;': '>'}
@@ -44,10 +42,14 @@ class export():
     CHAR_PIPE = '|'
 
     def __init__(self, slack_json):
+        # Data
         self.slack = slack_json
         self.__currentChannel = None
         self.__last_date = None
         self.__last_user = None
+
+        # Settings
+        self.process_channel_threads = False
 
     def exportChannelData(self, folder_loc: str, as_json=False):
         print("Exporting channel data to '" + folder_loc + "'")
@@ -122,6 +124,7 @@ class export():
 
         # Create a new export object to format the messages for us
         e = export(self.slack)
+        e.process_channel_threads = True
         thread_str = e.formatChannelJSON(thread, process_children=True)
 
         # Strip thread_str of leading/trailing whitespace, and add extra indentation
@@ -161,9 +164,10 @@ class export():
             prefix_str = "\n" + prefix_str
 
         # Do stuff based on the subtype
-        if subtype in export.SUBTYPES_IGNORE:
+        if subtype == 'thread_broadcast' and not self.process_channel_threads:
             return ""
-        elif subtype in export.SUBTYPES_NO_PREFIX:
+
+        if subtype in export.SUBTYPES_NO_PREFIX:
             body_str += self.__formatMsgContents(msg, include_ampersand=False)
         elif subtype in export.SUBTYPES_REDUCED_PREFIX:
             body_str += username + " " + self.__formatMsgContents(msg)
@@ -201,8 +205,8 @@ class export():
 
         elif subtype == 'reply_broadcast':
             ret += username + " replied to a thread"
-            if 'plain_text' in msg:
-                ret += ":\n" + export.INDENTATION + self.__improveMsgContents(msg['plain_text'])
+            #if 'plain_text' in msg:
+            #    ret += ":\n" + export.INDENTATION + self.__improveMsgContents(msg['plain_text'])
             ret += self.__addAttachments(msg)
 
         return ret
