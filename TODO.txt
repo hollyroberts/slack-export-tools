@@ -2,8 +2,9 @@ Finish off work on message subtypes
 Handle attachments
 	Add text, then add all attachments
 
-Save all messages with thread_ts that are not parents
-When a parent message is encountered, use this list to insert the thread messages
+Threads:
+    Add support for thread_broadcast
+    Possibly add support for attachments in reply_broadcast and thread_broadcast
 
 Refactor export to include io.py
 

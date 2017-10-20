@@ -80,7 +80,7 @@ class export():
 
         print("Data exported")
 
-    def formatChannelJSON(self, raw_json):
+    def formatChannelJSON(self, raw_json, process_children=False):
         # Reset last date/user
         self.__last_date = None
         self.__last_user = None
@@ -89,7 +89,7 @@ class export():
         formatted_data = []
         for msg in raw_json:
             # Do not process thread child messages, they will either be processed by reply_broadcast or the parent message
-            if not ('thread_ts' in msg and msg['thread_ts'] != msg['ts']):
+            if not ('thread_ts' in msg and msg['thread_ts'] != msg['ts']) or process_children:
                 formatted_data.append(self.__formatMsgJSON(msg))
 
         formatted_data = "".join(formatted_data)
@@ -97,12 +97,20 @@ class export():
         return formatted_data.strip()
 
     def __addThreadMsgs(self, parent):
-        thread_str = ""
-
-        # Iterate over replies
+        # Combine messages into array
+        thread = []
         for child in parent['replies']:
             child_ts = child['ts']
             child_msg = self.slack.channel_threads[self.__currentChannel][child_ts]
+            thread.append(child_msg)
+
+        # Create a new export object to format the messages for us
+        e = export(self.slack)
+        thread_str = e.formatChannelJSON(thread, process_children=True)
+
+        # Strip thread_str of leading/trailing whitespace, and add extra indentation
+        thread_str = thread_str.strip()
+        thread_str = thread_str.replace("\n", "\n" + export.INDENTATION_SHORT + "|  ")
 
         return thread_str
 
@@ -157,7 +165,9 @@ class export():
 
         # If message contains replies, then add them as a thread
         if 'thread_ts' in msg and 'replies' in msg and len(msg['replies']) > 0:
-            body_str += export.INDENTATION_SHORT + "T:"
+            if not export.COMPACT_EXPORT:
+                body_str += "\n"
+            body_str += "\n" + export.INDENTATION_SHORT + "T: "
             body_str += self. __addThreadMsgs(msg)
 
         # Update last_user
