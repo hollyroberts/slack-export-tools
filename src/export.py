@@ -25,6 +25,7 @@ class export():
                                'reminder_add')
 
     SUBTYPES_CUSTOM = ('me_message',
+                       'file_mention',
                        'reply_broadcast')
 
     SLACK_HTML_ENCODING = {'&amp;': '&',
@@ -202,6 +203,23 @@ class export():
             if export.COMPACT_EXPORT or self.__last_user != username:
                 ret += username + ": "
             ret += "_" + self.__formatMsgContents(msg) + "_"
+
+        elif subtype == 'file_mention':
+            ret += username + " mentioned a file: <"
+
+            # Add a link to the file
+            if 'file' in msg:
+                file_json = msg['file']
+
+                if 'permalink' in file_json:
+                    ret += file_json['permalink']
+
+                ret += "|"
+
+                if 'name' in file_json:
+                    ret += file_json['name']
+
+            ret += ">"
 
         elif subtype == 'reply_broadcast':
             ret += username + " replied to a thread"

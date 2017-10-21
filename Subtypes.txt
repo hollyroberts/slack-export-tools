@@ -12,13 +12,9 @@ channel_unarchive
 me_message # Benefits from possible RTF format
 pinned_item
 reminder_add
-slackbot_response
-
-CAN BE IMPROVED SIGNIFICANTLY:
 reply_broadcast
-
-NOT SUPPORTED:
-thread_broadcast - notifies thread that msg was broadcast, possibly add support for
+slackbot_response
+thread_broadcast
 
 NOT DONE:
 file_comment
