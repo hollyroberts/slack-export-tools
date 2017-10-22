@@ -3,8 +3,8 @@ import json
 import datetime
 import re
 
-from src.log import *
 from src.misc import *
+from src.slack import *
 
 class export():
     # CONSTANTS
@@ -25,6 +25,7 @@ class export():
                                'reminder_add')
 
     SUBTYPES_CUSTOM = ('me_message',
+                       'file_comment',
                        'file_mention',
                        'reply_broadcast')
 
@@ -204,22 +205,13 @@ class export():
                 ret += username + ": "
             ret += "_" + self.__formatMsgContents(msg) + "_"
 
+        elif subtype == 'file_comment':
+            ret += self.slack.getUserName(msg['comment']) + " commented on a file: " + self.__getFileLink(msg)
+            ret += "\n" + export.INDENTATION_SHORT + "C: "
+            ret += msg['comment']['comment']
+
         elif subtype == 'file_mention':
-            ret += username + " mentioned a file: <"
-
-            # Add a link to the file
-            if 'file' in msg:
-                file_json = msg['file']
-
-                if 'permalink' in file_json:
-                    ret += file_json['permalink']
-
-                ret += "|"
-
-                if 'name' in file_json:
-                    ret += file_json['name']
-
-            ret += ">"
+            ret += username + " mentioned a file: " + self.__getFileLink(msg)
 
         elif subtype == 'reply_broadcast':
             ret += username + " replied to a thread"
@@ -303,6 +295,23 @@ class export():
         # Denote the attachment by adding A: inline with the timestamp
         ret_str += "\n" + export.INDENTATION_SHORT + "A: " + body_str
 
+        return ret_str
+
+    def __getFileLink(self, msg):
+        ret_str = "<"
+
+        if 'file' in msg:
+            file_json = msg['file']
+
+            if 'permalink' in file_json:
+                ret_str += file_json['permalink']
+
+            ret_str += "|"
+
+            if 'name' in file_json:
+                ret_str += file_json['name']
+
+        ret_str += ">"
         return ret_str
 
     def __improveMsgContents(self, msg: str, include_ampersand=True):
