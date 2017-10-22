@@ -207,23 +207,14 @@ class export():
             ret += "_" + self.__formatMsgContents(msg) + "_"
 
         elif subtype == 'file_comment':
-            file_user = self.slack.getUserName(msg['file'])
-            comment_user = self.slack.getUserName(msg['comment'])
+            comment_username = self.slack.getUserName(msg['comment'])
+            ret += self.__formatFileMessage(msg, comment_username, "commented on")
 
-            if file_user == comment_user:
-                ret += comment_user + " commented on their file: " + self.__getFileLink(msg)
-            else:
-                ret += comment_user + " commented on " + file_user + "'s file: " + self.__getFileLink(msg)
             ret += "\n" + export.INDENTATION_SHORT + "C: "
             ret += msg['comment']['comment']
 
         elif subtype == 'file_mention':
-            file_user = self.slack.getUserName(msg['file'])
-
-            if file_user == username:
-                ret += username + " mentioned their file: " + self.__getFileLink(msg)
-            else:
-                ret += username + " mentioned " + file_user + "'s file: " + self.__getFileLink(msg)
+            ret += self.__formatFileMessage(msg, username, "mentioned")
 
         elif subtype == 'file_share':
             # File can be null, if so then just mention
@@ -239,10 +230,7 @@ class export():
                     ret += " and commented on it\n"
                     ret += export.INDENTATION_SHORT + "C: " + msg['file']['initial_comment']['comment']
             else:
-                if file_user == username:
-                    ret += username + " shared their file: " + self.__getFileLink(msg)
-                else:
-                    ret += username + " shared " + file_user + "'s file: " + self.__getFileLink(msg)
+                ret += self.__formatFileMessage(msg, username, "shared")
 
         elif subtype == 'reply_broadcast':
             ret += username + " replied to a thread"
@@ -251,6 +239,14 @@ class export():
             ret += self.__addAttachments(msg)
 
         return ret
+
+    def __formatFileMessage(self, msg, username, phrase: str):
+        file_username = self.slack.getUserName(msg['file'])
+
+        if file_username == username:
+            return username + " " + phrase + " their file: " + self.__getFileLink(msg)
+        else:
+            return username + " " + phrase + " " + file_username + "'s file: " + self.__getFileLink(msg)
 
     def __formatMsgContents(self, msg, include_ampersand=True):
         ret_str = ""

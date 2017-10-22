@@ -16,6 +16,12 @@ class misc():
 
     @staticmethod
     def strToBool(s: str):
+        # Type checks
+        if type(s) == bool:
+            return s
+        elif type(s) != str:
+            return False
+
         if s.upper() in misc.__TRUE_STRINGS:
             return True
         elif s.upper() in misc.__FALSE_STRINGS:
