@@ -19,6 +19,7 @@ class slackData():
         self.__loadSlack()
 
     def getUserName(self, msg):
+        # Prefer user over username field, since this is an ID and username can be present but blank
         if 'user' in msg:
             username = msg['user']
 

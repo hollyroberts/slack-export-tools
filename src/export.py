@@ -206,12 +206,23 @@ class export():
             ret += "_" + self.__formatMsgContents(msg) + "_"
 
         elif subtype == 'file_comment':
-            ret += self.slack.getUserName(msg['comment']) + " commented on a file: " + self.__getFileLink(msg)
+            file_user = self.slack.getUserName(msg['file'])
+            comment_user = self.slack.getUserName(msg['comment'])
+
+            if file_user == comment_user:
+                ret += comment_user + " commented on their file: " + self.__getFileLink(msg)
+            else:
+                ret += comment_user + " commented on " + file_user + "'s file: " + self.__getFileLink(msg)
             ret += "\n" + export.INDENTATION_SHORT + "C: "
             ret += msg['comment']['comment']
 
         elif subtype == 'file_mention':
-            ret += username + " mentioned a file: " + self.__getFileLink(msg)
+            file_user = self.slack.getUserName(msg['file'])
+
+            if file_user == username:
+                ret += username + " mentioned their file: " + self.__getFileLink(msg)
+            else:
+                ret += username + " mentioned " + file_user + "'s file: " + self.__getFileLink(msg)
 
         elif subtype == 'reply_broadcast':
             ret += username + " replied to a thread"
