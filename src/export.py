@@ -27,6 +27,7 @@ class export():
     SUBTYPES_CUSTOM = ('me_message',
                        'file_comment',
                        'file_mention',
+                       'file_share',
                        'reply_broadcast')
 
     SLACK_HTML_ENCODING = {'&amp;': '&',
@@ -223,6 +224,25 @@ class export():
                 ret += username + " mentioned their file: " + self.__getFileLink(msg)
             else:
                 ret += username + " mentioned " + file_user + "'s file: " + self.__getFileLink(msg)
+
+        elif subtype == 'file_share':
+            # File can be null, if so then just mention
+            if msg['file'] is None:
+                return msg['text']
+
+            file_user = self.slack.getUserName(msg['file'])
+
+            # Is the user uploading the file or sharing it
+            if msg['upload']:
+                ret += username + " uploaded a file: " + self.__getFileLink(msg)
+                if 'initial_comment' in msg['file']:
+                    ret += " and commented on it\n"
+                    ret += export.INDENTATION_SHORT + "C: " + msg['file']['initial_comment']['comment']
+            else:
+                if file_user == username:
+                    ret += username + " shared their file: " + self.__getFileLink(msg)
+                else:
+                    ret += username + " shared " + file_user + "'s file: " + self.__getFileLink(msg)
 
         elif subtype == 'reply_broadcast':
             ret += username + " replied to a thread"

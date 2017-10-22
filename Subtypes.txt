@@ -11,12 +11,10 @@ channel_topic
 channel_unarchive
 file_comment
 file_mention
+file_share
 me_message # Benefits from possible RTF format
 pinned_item
 reminder_add
 reply_broadcast
 slackbot_response
 thread_broadcast
-
-NOT DONE:
-file_share
