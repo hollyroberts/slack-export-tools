@@ -1,4 +1,3 @@
-from src.slack import *
 from src.export import *
 
 # CONSTANTS
@@ -94,10 +93,10 @@ def exportChosenOptions():
     e = export(slack)
 
     if 'e' in SWITCHES:
-        e.exportChannelData(io.export_dir + SWITCHES['e'])
+        e.exportChannelData(io.export_dir + SWITCHES['e'], exportModes.TEXT)
 
     if 'ej' in SWITCHES:
-        e.exportChannelData(io.export_dir + SWITCHES['ej'], as_json=True)
+        e.exportChannelData(io.export_dir + SWITCHES['ej'], exportModes.JSON)
 
 # Output info
 def outputUsers():

@@ -1,10 +1,13 @@
-import os
-import json
 import datetime
 import re
+from enum import Enum
 
 from src.misc import *
 from src.slack import *
+
+class exportModes(Enum):
+    JSON = ".json"
+    TEXT = ".txt"
 
 class export():
     # CONSTANTS
@@ -54,7 +57,7 @@ class export():
         # Settings
         self.process_channel_threads = False
 
-    def exportChannelData(self, folder_loc: str, as_json=False):
+    def exportChannelData(self, folder_loc: str, mode: exportModes):
         print("Exporting channel data to '" + folder_loc + "'")
 
         if not os.path.exists(folder_loc):
@@ -64,17 +67,12 @@ class export():
             self.__currentChannel = channel
             data = self.slack.channel_data[channel]
 
-            loc = folder_loc + "\\#" + channel
-            if as_json:
-                loc += ".json"
-            else:
-                loc += ".txt"
-
+            loc = folder_loc + "\\#" + channel + mode.value
             log.log(logModes.MEDIUM, "Exporting #" + channel + " to '" + loc + "'")
 
-            if as_json:
+            if mode is exportModes.JSON:
                 data = json.dumps(data, indent=4)
-            else:
+            elif mode is exportModes.TEXT:
                 data = self.formatChannelJSON(data)
 
             file = open(loc, "w", encoding="utf8")

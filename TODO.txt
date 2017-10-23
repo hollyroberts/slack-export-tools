@@ -1,7 +1,7 @@
-Finish off work on message subtypes
-Handle attachments
-	Add text, then add all attachments
-
-Refactor export to include io.py
+Add support for html export
+    markdown (bold, italics, strikethrough, etc.)
+    more formatting
+    images
+    links
 
 Perhaps convert all HTML chars at the very very end?

@@ -12,7 +12,7 @@ Export
 		Appropriate markup removed
 		Also needs to check for attachments
 		Add a readme (Warn about UTC, Data may be incomplete)
-		Option to export as RTF, hyperlinks can be encoded and possibly even images
+		Option to export as HTML, hyperlinks can be encoded and possibly even images
 	List of pins
 
 Debug
