@@ -39,9 +39,9 @@ Thumbs.db
 
 # Project ignores
 /clan
-/export
 /export_html
 /export_json
+/export_text
 .idea
 
 src/slack_data.py

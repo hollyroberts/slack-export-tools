@@ -1,17 +1,16 @@
 from src.export import *
 
 # CONSTANTS
-# Each switch maps to a 2 element array
-# The first element is boolean and determines whether the switch requires additional data
-# If not the default data is contained in the second item
+# Each switch maps to a boolean value, indicating whether or not data is required
 SWITCH_CHAR = '-'
-SWITCH_DATA = {'c': [True, ''],
-               'i': [True, ''],
-               'e': [False, 'export'],
-               'ej': [False, 'export_json'],
-               'eh': [False, 'export_html'],
-               'l': [True, ''],
-               'o': [True, '']}
+SWITCH_DATA = {'c': True,
+               'i': True,
+               'et': False,
+               'ej': False,
+               'eh': False,
+               'l': True,
+               'o': True,
+               'os': True}
 
 # Vars
 SWITCHES = {}
@@ -93,14 +92,14 @@ def printFinalStats(user_scores, channel_scores):
 def exportChosenOptions():
     e = export(slack)
 
-    if 'e' in SWITCHES:
-        e.exportChannelData(io.export_dir + SWITCHES['e'], exportModes.TEXT)
+    if 'et' in SWITCHES:
+        e.exportChannelData(io.export_text_dir, exportModes.TEXT)
 
     if 'ej' in SWITCHES:
-        e.exportChannelData(io.export_dir + SWITCHES['ej'], exportModes.JSON)
+        e.exportChannelData(io.export_json_dir, exportModes.JSON)
 
     if 'eh' in SWITCHES:
-        e.exportChannelData(io.export_dir + SWITCHES['eh'], exportModes.HTML)
+        e.exportChannelData(io.export_html_dir, exportModes.HTML)
 
 # Output info
 def outputUsers():
@@ -162,7 +161,7 @@ def interpretArgs(argv):
             sys.exit("Incorrect args. Switch '" + switch + "' has already been added")
 
         # Does switch require an argument
-        if SWITCH_DATA[switch][0]:
+        if SWITCH_DATA[switch]:
             i += 1
             if i >= len(argv):
                 sys.exit("Incorrect args. Required an argument for '" + switch + "', but ran out of arguments")
@@ -174,14 +173,9 @@ def interpretArgs(argv):
         else:
             i += 1
 
-            # Default if there are no more arguments
-            if i >= len(argv):
-                SWITCHES[switch] = SWITCH_DATA[switch][1]
-                break
-
-            # If next argument is a switch use default data
-            if argv[i].startswith(SWITCH_CHAR):
-                SWITCHES[switch] = SWITCH_DATA[switch][1]
+            # Default to None if there are no more arguments or next argument is a switch
+            if i >= len(argv) or argv[i].startswith(SWITCH_CHAR):
+                SWITCHES[switch] = None
                 continue
 
             SWITCHES[switch] = argv[i]
