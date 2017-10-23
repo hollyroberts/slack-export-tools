@@ -9,6 +9,7 @@ SWITCH_DATA = {'c': [True, ''],
                'i': [True, ''],
                'e': [False, 'export'],
                'ej': [False, 'export_json'],
+               'eh': [False, 'export_html'],
                'l': [True, ''],
                'o': [True, '']}
 
@@ -97,6 +98,9 @@ def exportChosenOptions():
 
     if 'ej' in SWITCHES:
         e.exportChannelData(io.export_dir + SWITCHES['ej'], exportModes.JSON)
+
+    if 'eh' in SWITCHES:
+        e.exportChannelData(io.export_dir + SWITCHES['eh'], exportModes.HTML)
 
 # Output info
 def outputUsers():

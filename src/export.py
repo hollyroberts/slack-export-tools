@@ -6,6 +6,7 @@ from src.misc import *
 from src.slack import *
 
 class exportModes(Enum):
+    HTML = ".html"
     JSON = ".json"
     TEXT = ".txt"
 
@@ -70,10 +71,12 @@ class export():
             loc = folder_loc + "\\#" + channel + mode.value
             log.log(logModes.MEDIUM, "Exporting #" + channel + " to '" + loc + "'")
 
+            if mode is exportModes.HTML:
+                data = self.formatChannelToHTML(data)
             if mode is exportModes.JSON:
                 data = json.dumps(data, indent=4)
             elif mode is exportModes.TEXT:
-                data = self.formatChannelJSON(data)
+                data = self.formatChannelToText(data)
 
             file = open(loc, "w", encoding="utf8")
             file.write(data)
@@ -84,7 +87,10 @@ class export():
 
         print("Data exported")
 
-    def formatChannelJSON(self, raw_json, process_children=False):
+    def formatChannelToHTML(self, raw_json):
+        return self.formatChannelToText(raw_json)
+
+    def formatChannelToText(self, raw_json, process_children=False):
         # Reset last date/user
         self.__last_date = None
         self.__last_user = None
@@ -126,7 +132,7 @@ class export():
         # Create a new export object to format the messages for us
         e = export(self.slack)
         e.process_channel_threads = True
-        thread_str = e.formatChannelJSON(thread, process_children=True)
+        thread_str = e.formatChannelToText(thread, process_children=True)
 
         # Strip thread_str of leading/trailing whitespace, and add extra indentation
         thread_str = thread_str.strip()

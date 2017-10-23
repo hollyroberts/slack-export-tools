@@ -40,6 +40,7 @@ Thumbs.db
 # Project ignores
 /clan
 /export
+/export_html
 /export_json
 .idea
 
