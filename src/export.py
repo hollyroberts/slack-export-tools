@@ -48,6 +48,9 @@ class export():
     INDENTATION_SHORT = "     "  # 5 spaces
     CHAR_PIPE = '|'
 
+    HTML_DOC_START = "<!DOCTYPE html>\n<pre>"
+    HTML_DOC_END = ""
+
     def __init__(self, slack_json):
         # Data
         self.slack = slack_json
@@ -88,7 +91,9 @@ class export():
         print("Data exported")
 
     def formatChannelToHTML(self, raw_json):
-        return self.formatChannelToText(raw_json)
+        data = self.formatChannelToText(raw_json)
+        #data = data.replace("\n", export.HTML_NEW_LINE)
+        return export.HTML_DOC_START + data + export.HTML_DOC_END
 
     def formatChannelToText(self, raw_json, process_children=False):
         # Reset last date/user
