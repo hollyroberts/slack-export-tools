@@ -13,7 +13,7 @@ SWITCH_DATA = {'c': True,
                'os': True}
 
 # Vars
-SWITCHES = {}
+switches = {}
 
 # FUNCS
 
@@ -92,14 +92,17 @@ def printFinalStats(user_scores, channel_scores):
 def exportChosenOptions():
     e = export(slack)
 
-    if 'et' in SWITCHES:
-        e.exportChannelData(io.export_text_dir, exportModes.TEXT)
+    if 'et' in switches:
+        e.exportChannelData(io.text_dir, exportModes.TEXT)
 
-    if 'ej' in SWITCHES:
-        e.exportChannelData(io.export_json_dir, exportModes.JSON)
+    if 'ej' in switches:
+        e.exportChannelData(io.json_dir, exportModes.JSON)
 
-    if 'eh' in SWITCHES:
-        e.exportChannelData(io.export_html_dir, exportModes.HTML)
+    if 'eh' in switches:
+        e.exportChannelData(io.html_dir, exportModes.HTML)
+
+def calculateStatistics():
+    pass
 
 # Output info
 def outputUsers():
@@ -157,7 +160,7 @@ def interpretArgs(argv):
             sys.exit("Incorrect args. Switch '" + switch + "' not found")
 
         # Switch must not have been added already
-        if switch in SWITCHES:
+        if switch in switches:
             sys.exit("Incorrect args. Switch '" + switch + "' has already been added")
 
         # Does switch require an argument
@@ -169,40 +172,41 @@ def interpretArgs(argv):
             if argv[i].startswith(SWITCH_CHAR):
                 sys.exit("Incorrect args. Required argument for '" + switch + "', but found a switch")
 
-            SWITCHES[switch] = argv[i]
+            switches[switch] = argv[i]
         else:
             i += 1
 
             # Default to None if there are no more arguments or next argument is a switch
             if i >= len(argv) or argv[i].startswith(SWITCH_CHAR):
-                SWITCHES[switch] = None
+                switches[switch] = None
                 continue
 
-            SWITCHES[switch] = argv[i]
+            switches[switch] = argv[i]
 
         i += 1
 
 def setSlackSource():
-    if 'i' not in SWITCHES or SWITCHES['i'] == "":
+    if 'i' not in switches or switches['i'] == "":
         source_dir = ""
     else:
-        source_dir = SWITCHES['i']
+        source_dir = switches['i']
         if not source_dir.endswith("\\"):
             source_dir += "\\"
 
     io.source_dir = source_dir
 
 def setLogMode():
-    if 'l' not in SWITCHES:
+    if 'l' not in switches:
         return
 
-    log.setModeStr(SWITCHES['l'])
+    log.setModeStr(switches['l'])
 
-def setExportLocation():
+def setExportLocations():
     dir = ""
 
-    if 'o' in SWITCHES and SWITCHES['o'] != "":
-        dir = SWITCHES['o']
+    # Master export dir
+    if 'o' in switches and switches['o'] != "":
+        dir = switches['o']
         if not dir.endswith("\\"):
             dir += "\\"
 
@@ -210,8 +214,8 @@ def setExportLocation():
 
 def setExportMode():
     mode = False
-    if 'c' in SWITCHES:
-        mode = misc.strToBool(SWITCHES['c'])
+    if 'c' in switches:
+        mode = misc.strToBool(switches['c'])
 
     export.COMPACT_EXPORT = mode
 
@@ -219,3 +223,4 @@ def setExportMode():
 loadArgs()
 slack = slackData()
 exportChosenOptions()
+calculateStatistics()
