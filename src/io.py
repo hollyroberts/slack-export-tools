@@ -3,11 +3,11 @@ import json
 
 
 class io():
-    # Default values, also allows us to rebuild values when parts are changed
-    __html_dir = "export_html\\"
-    __json_dir = "export_json\\"
-    __stats_dir = "stats\\"
-    __text_dir = "export_text\\"
+    # Store parts so we can reconstruct the full path
+    __html_dir = ""
+    __json_dir = ""
+    __stats_dir = ""
+    __text_dir = ""
 
     source_dir = ""
     export_dir = ""
@@ -21,13 +21,12 @@ class io():
         pass
 
     @staticmethod
-    def setExportDir(self, dir: str):
+    def setExportDir(dir: str):
         io.export_dir = io.combinePaths(dir)
         io.html_dir = io.combinePaths(dir, io.__html_dir)
         io.json_dir = io.combinePaths(dir, io.__json_dir)
         io.stats_dir = io.combinePaths(dir, io.__stats_dir)
         io.text_dir = io.combinePaths(dir, io.__text_dir)
-
 
     @staticmethod
     def combinePaths(*args: str):
@@ -40,22 +39,22 @@ class io():
         return dir
 
     @staticmethod
-    def setHtmlDir(self, dir: str):
+    def setHtmlDir(dir: str):
         io.__html_dir = dir
         io.html_dir = io.combinePaths(io.export_dir, io.__html_dir)
 
     @staticmethod
-    def setJsonDir(self, dir: str):
+    def setJsonDir(dir: str):
         io.__json_dir = dir
         io.json_dir = io.combinePaths(io.export_dir, io.__json_dir)
 
     @staticmethod
-    def setStatsDir(self, dir: str):
+    def setStatsDir(dir: str):
         io.__stats_dir = dir
         io.stats_dir = io.combinePaths(io.export_dir, io.__stats_dir)
 
     @staticmethod
-    def setTextDir(self, dir: str):
+    def setTextDir(dir: str):
         io.__text_dir = dir
         io.text_dir = io.combinePaths(io.export_dir, io.__text_dir)
 

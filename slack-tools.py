@@ -2,6 +2,7 @@ from src.export import *
 
 # CONSTANTS
 # Each switch maps to a boolean value, indicating whether or not data is required
+# Default data is also contained for certain switches
 SWITCH_CHAR = '-'
 SWITCH_DATA = {'c': True,
                'i': True,
@@ -11,6 +12,9 @@ SWITCH_DATA = {'c': True,
                'l': True,
                'o': True,
                'os': True}
+SWITCH_DEFAULT = {'et': "export_text",
+                  'ej': "export_json",
+                  'eh': "export_html"}
 
 # Vars
 switches = {}
@@ -143,6 +147,7 @@ def loadArgs():
     setSlackSource()
     setLogMode()
     setExportMode()
+    setExportLocations()
 
 def interpretArgs(argv):
     # Remove script location
@@ -176,9 +181,12 @@ def interpretArgs(argv):
         else:
             i += 1
 
-            # Default to None if there are no more arguments or next argument is a switch
+            # If there are no more arguments or next argument is a switch then either add none or the appropriate value
             if i >= len(argv) or argv[i].startswith(SWITCH_CHAR):
-                switches[switch] = None
+                if switch in SWITCH_DEFAULT:
+                    switches[switch] = SWITCH_DEFAULT[switch]
+                else:
+                    switches[switch] = None
                 continue
 
             switches[switch] = argv[i]
@@ -202,15 +210,12 @@ def setLogMode():
     log.setModeStr(switches['l'])
 
 def setExportLocations():
-    dir = ""
+    io.setExportDir(switches.get('o', ""))
+    io.setStatsDir(switches.get('os', "stats\\"))
 
-    # Master export dir
-    if 'o' in switches and switches['o'] != "":
-        dir = switches['o']
-        if not dir.endswith("\\"):
-            dir += "\\"
-
-    io.export_dir = dir
+    io.setHtmlDir(switches.get('eh', SWITCH_DEFAULT['eh']))
+    io.setJsonDir(switches.get('ej', SWITCH_DEFAULT['ej']))
+    io.setTextDir(switches.get('et', SWITCH_DEFAULT['et']))
 
 def setExportMode():
     mode = False
