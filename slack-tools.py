@@ -111,7 +111,7 @@ def calculateStatistics():
 # Output info
 def outputUsers():
     print("List of users:")
-    for i in slack.users:
+    for i in slack.metadata.users:
         print(i)
 
 def outputSubtypes():

@@ -67,7 +67,7 @@ class export():
         if not os.path.exists(folder_loc):
             os.makedirs(folder_loc)
 
-        for channel in self.slack.channels:
+        for channel in self.slack.metadata.channels:
             self.__currentChannel = channel
             data = self.slack.channel_data[channel]
 
@@ -169,7 +169,7 @@ class export():
         subtype = None
         if 'subtype' in msg:
             subtype = msg['subtype']
-        username = self.slack.getUserName(msg)
+        username = self.slack.metadata.getUserName(msg)
 
         # If not compact and message is new (and date has not changed), add a newline to the prefix
         if not export.COMPACT_EXPORT and self.__last_user != username and prefix_str == "\n":
@@ -216,7 +216,7 @@ class export():
             ret += "_" + self.__formatMsgContents(msg) + "_"
 
         elif subtype == 'file_comment':
-            comment_username = self.slack.getUserName(msg['comment'])
+            comment_username = self.slack.metadata.getUserName(msg['comment'])
             ret += self.__formatFileMessage(msg, comment_username, "commented on")
 
             ret += "\n" + export.INDENTATION_SHORT + "C: "
@@ -230,7 +230,7 @@ class export():
             if msg['file'] is None:
                 return msg['text']
 
-            file_user = self.slack.getUserName(msg['file'])
+            file_user = self.slack.metadata.getUserName(msg['file'])
 
             # Is the user uploading the file or sharing it
             if msg['upload']:
@@ -250,7 +250,7 @@ class export():
         return ret
 
     def __formatFileMessage(self, msg, username, phrase: str):
-        file_username = self.slack.getUserName(msg['file'])
+        file_username = self.slack.metadata.getUserName(msg['file'])
 
         if file_username == username:
             return username + " " + phrase + " their file: " + self.__getFileLink(msg)
@@ -373,8 +373,8 @@ class export():
             new_text = "#"
             id = match.group()[2:-1]
 
-            if id in self.slack.channel_map:
-                new_text += self.slack.channel_map[id]
+            if id in self.slack.metadata.channel_map:
+                new_text += self.slack.metadata.channel_map[id]
             else:
                 new_text += id
 
@@ -405,8 +405,8 @@ class export():
 
             if ID == 'SLACKBOT':
                 new_text += "Slackbot"
-            elif ID in self.slack.users_map:
-                new_text += self.slack.users_map[ID]
+            elif ID in self.slack.metadata.users_map:
+                new_text += self.slack.metadata.users_map[ID]
             else:
                 new_text += ID
 
