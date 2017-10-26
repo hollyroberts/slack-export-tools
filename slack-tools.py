@@ -227,5 +227,6 @@ def setExportMode():
 # START OF PROGRAM
 loadArgs()
 slack = slackData()
+slack.loadSlack()
 exportChosenOptions()
 calculateStatistics()

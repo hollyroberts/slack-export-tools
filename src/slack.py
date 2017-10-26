@@ -1,4 +1,5 @@
 import os
+import copy
 
 from src.io import *
 
@@ -8,9 +9,16 @@ class slackData():
         self.channel_data = {}
         self.channel_threads = {}
 
-        self.__loadSlack()
+    def clone(self):
+        clone = slackData()
 
-    def __loadSlack(self):
+        clone.metadata = self.metadata.clone()
+        clone.channel_data = copy.deepcopy(self.channel_data)
+        clone.channel_threads = copy.deepcopy(self.channel_threads)
+
+        return clone
+
+    def loadSlack(self):
         print("Loading slack from: " + io.source_dir)
 
         # Load metadata
@@ -90,6 +98,16 @@ class slackMetaData():
         self.channels = sorted(self.channel_map.values())
         self.users_map = self.__loadUserMapping()
         self.users = sorted(list(self.users_map.values()))
+
+    def clone(self):
+        clone = slackMetaData()
+
+        clone.users = copy.deepcopy(self.users)
+        clone.users_map = copy.deepcopy(self.users_map)
+        clone.channels = copy.deepcopy(self.channels)
+        clone.channel_map = copy.deepcopy(self.channel_map)
+
+        return clone
 
     def __loadChannelMap(self):
         channel_data = io.loadJSONFile("channels.json")
