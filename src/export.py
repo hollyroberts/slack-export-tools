@@ -71,7 +71,7 @@ class export():
             self.__currentChannel = channel
             data = self.slack.channel_data[channel]
 
-            loc = folder_loc + "\\#" + channel + mode.value
+            loc = folder_loc + "#" + channel + mode.value
             log.log(logModes.MEDIUM, "Exporting #" + channel + " to '" + loc + "'")
 
             if mode is exportModes.HTML:
