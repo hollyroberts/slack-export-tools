@@ -7,20 +7,25 @@ class stats():
         self.slack = slack
 
         # Initialise blank maps and then calculate stats
-        self.users = {}
+        self.user_count = {}
         for u in self.slack.metadata.users:
-            self.users[u] = 0
-        self.channels = {}
+            self.user_count[u] = 0
+        self.channel_count = {}
 
         self.__calculateStats()
-        self.tot_messages = sum(self.users.values())
+        self.tot_messages = sum(self.user_count.values())
 
     def exportPostStats(self):
         wb = Workbook()
         out_file = io.stats_dir + "Post stats.xlsx"
 
         self.__createColumns(wb)
-        self.__addUserStats(wb)
+
+        wb_users = wb.get_sheet_by_name("Users")
+        wb_channels = wb.get_sheet_by_name("Channels")
+        wb_users = wb.get_sheet_by_name("Users")
+        self.__addStats(wb_users, self.slack.metadata.users, self.user_count)
+        self.__addStats(wb_channels, self.slack.metadata.channels, self.channel_count)
 
         log.log(logModes.LOW, "Exporting statistics to '" + out_file + "'")
         io.ensureDir(io.stats_dir)
@@ -36,27 +41,24 @@ class stats():
             for msg in self.slack.channel_data[channel]:
                 if ('subtype' not in msg) and (msg['user'] != 'USLACKBOT'):
                     channel_count += 1
-                    self.users[self.slack.metadata.getUserName(msg)] += 1
+                    self.user_count[self.slack.metadata.getUserName(msg)] += 1
 
-            self.channels[channel] = channel_count
+            self.channel_count[channel] = channel_count
 
-    def __addUserStats(self, wb: Workbook):
-        wb_users = wb.get_sheet_by_name('Users')
-
-        # Iterate over users instead of map so it's in alphabetical order
+    def __addStats(self, ws, values_ls: list, values_map: dict):
         i = 0
-        for user in self.slack.metadata.users:
+        for val in values_ls:
             # Calculate info
-            messages = self.users[user]
+            messages = values_map[val]
             percentage = messages / self.tot_messages
             percentage = round(percentage, 3)
 
             # Save into workbook
-            wb_users.cell(row=(i + 2), column=1).value = user
-            wb_users.cell(row=(i + 2), column=2).value = messages
-            wb_users.cell(row=(i + 2), column=2).number_format = "0"
-            wb_users.cell(row=(i + 2), column=3).value = percentage
-            wb_users.cell(row=(i + 2), column=3).number_format = "0.0%"
+            ws.cell(row=(i + 2), column=1).value = val
+            ws.cell(row=(i + 2), column=2).value = messages
+            ws.cell(row=(i + 2), column=2).number_format = "0"
+            ws.cell(row=(i + 2), column=3).value = percentage
+            ws.cell(row=(i + 2), column=3).number_format = "0.0%"
 
             i += 1
 
