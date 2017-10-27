@@ -13,17 +13,16 @@ class stats():
         self.channels = {}
 
         self.__calculateStats()
+        self.tot_messages = sum(self.users.values())
 
     def exportPostStats(self):
         wb = Workbook()
         out_file = io.stats_dir + "Post stats.xlsx"
 
-        wb_users = wb.active
-        wb_users.title = "Users"
+        self.__createColumns(wb)
+        self.__addUserStats(wb)
 
-        wb_channels = wb.create_sheet(title="Channels")
-
-        log.log(logModes.LOW, "Exporting stats to " + out_file)
+        log.log(logModes.LOW, "Exporting statistics to '" + out_file + "'")
         io.ensureDir(io.stats_dir)
         wb.save(filename=out_file)
 
@@ -40,3 +39,38 @@ class stats():
                     self.users[self.slack.metadata.getUserName(msg)] += 1
 
             self.channels[channel] = channel_count
+
+    def __addUserStats(self, wb: Workbook):
+        wb_users = wb.get_sheet_by_name('Users')
+
+        # Iterate over users instead of map so it's in alphabetical order
+        i = 0
+        for user in self.slack.metadata.users:
+            # Calculate info
+            messages = self.users[user]
+            percentage = messages / self.tot_messages
+            percentage = round(percentage, 3)
+
+            # Save into workbook
+            wb_users.cell(row=(i + 2), column=1).value = user
+            wb_users.cell(row=(i + 2), column=2).value = messages
+            wb_users.cell(row=(i + 2), column=2).number_format = "0"
+            wb_users.cell(row=(i + 2), column=3).value = percentage
+            wb_users.cell(row=(i + 2), column=3).number_format = "0.0%"
+
+            i += 1
+
+    def __createColumns(self, wb: Workbook):
+        # Create two sheets for users and channels
+        wb_users = wb.active
+        wb_users.title = "Users"
+        wb_channels = wb.create_sheet(title="Channels")
+
+        # Add column names
+        wb_users['A1'] = "Username"
+        wb_users['B1'] = "Messages"
+        wb_users['C1'] = "Percentage"
+
+        wb_channels['A1'] = "Channel"
+        wb_channels['B1'] = "Messages"
+        wb_channels['C1'] = "Percentage"
