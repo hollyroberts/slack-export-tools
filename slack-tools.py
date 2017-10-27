@@ -12,7 +12,8 @@ SWITCH_DATA = {'c': True,
                'eh': False,
                'l': True,
                'o': True,
-               'os': True}
+               'os': True,
+               's': False}
 SWITCH_DEFAULT = {'et': "export_text",
                   'ej': "export_json",
                   'eh': "export_html"}
@@ -108,6 +109,9 @@ def exportHistory():
 
 def exportStatistics():
     s = stats(slack)
+
+    if 's' in switches:
+        s.exportPostStats()
 
 # Output info
 def outputUsers():
@@ -231,3 +235,4 @@ slack = slackData()
 slack.loadSlack()
 exportHistory()
 exportStatistics()
+log.log(logModes.LOW, "Finished")

@@ -1,3 +1,5 @@
+from openpyxl import Workbook
+
 from src.slack import *
 
 class stats():
@@ -12,8 +14,20 @@ class stats():
 
         self.__calculateStats()
 
-    def exportUserStats(self):
-        pass
+    def exportPostStats(self):
+        wb = Workbook()
+        out_file = io.stats_dir + "Post stats.xlsx"
+
+        wb_users = wb.active
+        wb_users.title = "Users"
+
+        wb_channels = wb.create_sheet(title="Channels")
+
+        if not os.path.exists(io.stats_dir):
+            os.makedirs(io.stats_dir)
+
+        log.log(logModes.LOW, "Exporting stats to " + out_file)
+        wb.save(filename=out_file)
 
     def __calculateStats(self):
         log.log(logModes.LOW, "Calculating statistics")
