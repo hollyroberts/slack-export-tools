@@ -1,5 +1,6 @@
 from src.log import *
 import json
+import os
 
 
 class io():
@@ -57,6 +58,11 @@ class io():
     def setTextDir(dir: str):
         io.__text_dir = dir
         io.text_dir = io.combinePaths(io.export_dir, io.__text_dir)
+
+    @staticmethod
+    def ensureDir(dir: str):
+        if not os.path.exists(dir):
+            os.makedirs(dir)
 
     @staticmethod
     def loadJSONFile(file):

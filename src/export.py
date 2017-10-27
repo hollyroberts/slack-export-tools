@@ -64,8 +64,7 @@ class export():
     def exportChannelData(self, folder_loc: str, mode: exportModes):
         print("Exporting channel data to '" + folder_loc + "'")
 
-        if not os.path.exists(folder_loc):
-            os.makedirs(folder_loc)
+        io.ensureDir(folder_loc)
 
         for channel in self.slack.metadata.channels:
             self.__currentChannel = channel

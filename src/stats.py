@@ -23,10 +23,8 @@ class stats():
 
         wb_channels = wb.create_sheet(title="Channels")
 
-        if not os.path.exists(io.stats_dir):
-            os.makedirs(io.stats_dir)
-
         log.log(logModes.LOW, "Exporting stats to " + out_file)
+        io.ensureDir(io.stats_dir)
         wb.save(filename=out_file)
 
     def __calculateStats(self):
