@@ -1,5 +1,5 @@
 from openpyxl import Workbook
-from openpyxl.styles import Alignment
+from openpyxl.styles import Alignment, Border, Font, Side
 
 from src.slack import *
 
@@ -87,9 +87,17 @@ class stats():
         ws['B1'] = "Messages"
         ws['C1'] = "Percentage"
 
-        # Make messages and percentage aligned
+        # Align horizontally messages and percentage aligned
         ws['B1'].alignment = Alignment(horizontal='center')
         ws['C1'].alignment = Alignment(horizontal='center')
+
+        # Make column titles bold and underlined
+        ws['A1'].font = Font(bold=True)
+        ws['B1'].font = Font(bold=True)
+        ws['C1'].font = Font(bold=True)
+        ws['A1'].border = Border(bottom=Side(border_style='thin'))
+        ws['B1'].border = Border(bottom=Side(border_style='thin'))
+        ws['C1'].border = Border(bottom=Side(border_style='thin'))
 
     def __adjustColumnWidth(self, ws):
         # https://stackoverflow.com/a/39530676
