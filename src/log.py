@@ -6,6 +6,9 @@ class logModes(Enum):
     MEDIUM = 2
     HIGH = 3
 
+    # Use minus codes for errors/warnings
+    ERROR = -1
+
 class log():
     # Default logging mode
     __mode = logModes.LOW
@@ -17,11 +20,11 @@ class log():
     @staticmethod
     def setModeStr(newMode: str):
         for i in logModes:
-            if i.name == newMode.upper():
+            if i.name == newMode.upper() and i.value > 0:
                 log.__mode = i
                 return
 
-        sys.exit("Incorrect log mode specified. Please use one of the following: " + ", ".join(i.name for i in logModes))
+        sys.exit("Incorrect log mode specified. Please use one of the following: " + ", ".join(i.name for i in logModes if i.value > 0))
 
     # Log text directly
     @staticmethod
@@ -32,4 +35,4 @@ class log():
     # Check if we should log (for more advanced print statements)
     @staticmethod
     def shouldLog(logMode: logModes):
-        return logMode.value <= log.__mode.value
+        return abs(logMode.value) <= log.__mode.value

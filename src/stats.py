@@ -40,7 +40,11 @@ class stats():
         # Save
         log.log(logModes.LOW, "Exporting statistics to '" + out_file + "'")
         io.ensureDir(io.stats_dir)
-        wb.save(filename=out_file)
+
+        try:
+            wb.save(filename=out_file)
+        except PermissionError:
+            log.log(logModes.ERROR, "Could not write to file: Permission Denied")
 
     def __calculateStats(self):
         log.log(logModes.LOW, "Calculating statistics")
