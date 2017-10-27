@@ -1,4 +1,5 @@
 from openpyxl import Workbook
+from openpyxl.styles import Alignment
 
 from src.slack import *
 
@@ -19,14 +20,24 @@ class stats():
         wb = Workbook()
         out_file = io.stats_dir + "Post stats.xlsx"
 
-        self.__createColumns(wb)
+        # Create two sheets for users and channels
+        wb_users = wb.active
+        wb_users.title = "Users"
+        wb_channels = wb.create_sheet(title="Channels")
+        self.__createColumns(wb_channels)
+        self.__createColumns(wb_users)
 
-        wb_users = wb.get_sheet_by_name("Users")
+        # Add data
         wb_channels = wb.get_sheet_by_name("Channels")
         wb_users = wb.get_sheet_by_name("Users")
+        self.__addStats(wb_channels, self.slack.metadata.channels, self.channel_count, prefix='#')
         self.__addStats(wb_users, self.slack.metadata.users, self.user_count)
-        self.__addStats(wb_channels, self.slack.metadata.channels, self.channel_count)
 
+        # Make it pretty
+        self.__adjustColumnWidth(wb_channels)
+        self.__adjustColumnWidth(wb_users)
+
+        # Save
         log.log(logModes.LOW, "Exporting statistics to '" + out_file + "'")
         io.ensureDir(io.stats_dir)
         wb.save(filename=out_file)
@@ -45,7 +56,7 @@ class stats():
 
             self.channel_count[channel] = channel_count
 
-    def __addStats(self, ws, values_ls: list, values_map: dict):
+    def __addStats(self, ws, values_ls: list, values_map: dict, prefix:str=''):
         i = 0
         for val in values_ls:
             # Calculate info
@@ -54,25 +65,39 @@ class stats():
             percentage = round(percentage, 3)
 
             # Save into workbook
-            ws.cell(row=(i + 2), column=1).value = val
+            ws.cell(row=(i + 2), column=1).value = prefix + val
             ws.cell(row=(i + 2), column=2).value = messages
             ws.cell(row=(i + 2), column=2).number_format = "0"
             ws.cell(row=(i + 2), column=3).value = percentage
             ws.cell(row=(i + 2), column=3).number_format = "0.0%"
 
+            # Center 2nd and 3rd column
+            ws.cell(row=(i + 2), column=2).alignment = Alignment(horizontal='center')
+            ws.cell(row=(i + 2), column=3).alignment = Alignment(horizontal='center')
+
             i += 1
 
-    def __createColumns(self, wb: Workbook):
-        # Create two sheets for users and channels
-        wb_users = wb.active
-        wb_users.title = "Users"
-        wb_channels = wb.create_sheet(title="Channels")
-
+    def __createColumns(self, ws):
         # Add column names
-        wb_users['A1'] = "Username"
-        wb_users['B1'] = "Messages"
-        wb_users['C1'] = "Percentage"
+        ws['A1'] = ws.title[:-1]
+        ws['B1'] = "Messages"
+        ws['C1'] = "Percentage"
 
-        wb_channels['A1'] = "Channel"
-        wb_channels['B1'] = "Messages"
-        wb_channels['C1'] = "Percentage"
+        # Make messages and percentage aligned
+        ws['B1'].alignment = Alignment(horizontal='center')
+        ws['C1'].alignment = Alignment(horizontal='center')
+
+    def __adjustColumnWidth(self, ws):
+        # https://stackoverflow.com/a/39530676
+
+        for col in ws.columns:
+            max_length = 0
+            column = col[0].column  # Get the column name
+            for cell in col:
+                try:  # Necessary to avoid error on empty cells
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(cell.value)
+                except:
+                    pass
+            adjusted_width = (max_length + 0.5) * 1.2
+            ws.column_dimensions[column].width = adjusted_width
