@@ -2,9 +2,9 @@ from src.export import *
 from src.stats import *
 
 # CONSTANTS
+SWITCH_CHAR = '-'
 # Each switch maps to a boolean value, indicating whether or not data is required
 # Default data is also contained for certain switches
-SWITCH_CHAR = '-'
 SWITCH_DATA = {'c': True,
                'i': True,
                'et': False,
@@ -17,6 +17,7 @@ SWITCH_DATA = {'c': True,
 SWITCH_DEFAULT = {'et': "export_text",
                   'ej': "export_json",
                   'eh': "export_html"}
+SWITCH_STATS = ('s',)
 
 # Vars
 switches = {}
@@ -108,6 +109,9 @@ def exportHistory():
         e.exportChannelData(io.html_dir, exportModes.HTML)
 
 def exportStatistics():
+    if not any(x in SWITCH_STATS for x in switches):
+        return
+
     s = stats(slack)
 
     if 's' in switches:
