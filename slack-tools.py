@@ -1,4 +1,5 @@
 from src.export import *
+from src.stats import *
 
 # CONSTANTS
 # Each switch maps to a boolean value, indicating whether or not data is required
@@ -93,7 +94,7 @@ def printFinalStats(user_scores, channel_scores):
         # print(i + ":\t" + str(messages) + " (" + str(percentage) + "%)")
 
 # Exporting
-def exportChosenOptions():
+def exportHistory():
     e = export(slack)
 
     if 'et' in switches:
@@ -105,8 +106,8 @@ def exportChosenOptions():
     if 'eh' in switches:
         e.exportChannelData(io.html_dir, exportModes.HTML)
 
-def calculateStatistics():
-    pass
+def exportStatistics():
+    s = stats(slack)
 
 # Output info
 def outputUsers():
@@ -228,5 +229,5 @@ def setExportMode():
 loadArgs()
 slack = slackData()
 slack.loadSlack()
-exportChosenOptions()
-calculateStatistics()
+exportHistory()
+exportStatistics()
