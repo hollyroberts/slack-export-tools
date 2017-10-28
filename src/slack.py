@@ -84,11 +84,7 @@ class slackMetaData():
                 return self.users_map[username]
 
         if 'username' in msg:
-            username = msg['username']
-            if username in self.users_map:
-                return self.users_map[username]
-            else:
-                return username
+            return msg['username']
 
         return "Unknown"
 
