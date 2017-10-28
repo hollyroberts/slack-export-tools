@@ -1,3 +1,5 @@
+import datetime
+
 class misc():
     __TRUE_STRINGS = ['T', 'TRUE']
     __FALSE_STRINGS = ['F', 'FALSE']
@@ -5,6 +7,7 @@ class misc():
     def __init__(self):
         pass
 
+    # Types
     @staticmethod
     def padInt(val: int, length=2):
         ret = str(val)
@@ -36,3 +39,8 @@ class misc():
             return s
 
         return s.upper() == pattern.upper()
+
+    # Dates/times
+    @staticmethod
+    def formatDateToUK(d: datetime.date):
+        return d.strftime('%d/%m/%Y')

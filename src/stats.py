@@ -1,7 +1,8 @@
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Border, Font, Side
-
+import datetime
 from src.slack import *
+from src.misc import *
 
 class stats():
     def __init__(self, slack: slackData, full_stats=False):
@@ -13,6 +14,7 @@ class stats():
         for u in self.slack.metadata.users:
             self.user_count[u] = 0
         self.channel_count = {}
+        self.day_count = {}
 
         self.__calculateStats()
         self.tot_messages = sum(self.user_count.values())
@@ -25,17 +27,21 @@ class stats():
         wb_users = wb.active
         wb_users.title = "Users"
         wb_channels = wb.create_sheet(title="Channels")
+        wb_days = wb.create_sheet(title="Days")
         self.__createColumns(wb_channels)
+        self.__createColumns(wb_days)
         self.__createColumns(wb_users)
 
         # Add data
-        wb_channels = wb.get_sheet_by_name("Channels")
-        wb_users = wb.get_sheet_by_name("Users")
+        sorted_dates = sorted(self.day_count.keys())
+
         self.__addStats(wb_channels, self.slack.metadata.channels, self.channel_count, prefix='#')
+        self.__addStats(wb_days, sorted_dates, self.day_count, format_func=misc.formatDateToUK)
         self.__addStats(wb_users, self.slack.metadata.users, self.user_count)
 
         # Make it pretty
         self.__adjustColumnWidth(wb_channels)
+        self.__adjustColumnWidth(wb_days)
         self.__adjustColumnWidth(wb_users)
 
         # Save
@@ -58,6 +64,12 @@ class stats():
                 if ('subtype' not in msg) and (msg['user'] != 'USLACKBOT'):
                     channel_count += 1
                     self.user_count[self.slack.metadata.getUserName(msg)] += 1
+                    d = dt = datetime.datetime.fromtimestamp(float(msg['ts'])).date()
+
+                    if d in self.day_count:
+                        self.day_count[d] += 1
+                    else:
+                        self.day_count[d] = 1
 
             self.channel_count[channel] = channel_count
 
@@ -65,10 +77,11 @@ class stats():
         if self.full_stats:
             return
 
+        self.day_count = {k:v for k, v in self.day_count.items() if v > 0}
         self.channel_count = {k:v for k, v in self.channel_count.items() if v > 0}
         self.user_count = {k:v for k, v in self.user_count.items() if v > 0}
 
-    def __addStats(self, ws, values_ls: list, values_map: dict, prefix:str=''):
+    def __addStats(self, ws, values_ls: list, values_map: dict, prefix:str='', format_func=str):
         i = 0
         for val in values_ls:
             if val not in values_map:
@@ -80,7 +93,7 @@ class stats():
             percentage = round(percentage, 3)
 
             # Save into workbook
-            ws.cell(row=(i + 2), column=1).value = prefix + val
+            ws.cell(row=(i + 2), column=1).value = prefix + format_func(val)
             ws.cell(row=(i + 2), column=2).value = messages
             ws.cell(row=(i + 2), column=2).number_format = "0"
             ws.cell(row=(i + 2), column=3).value = percentage
