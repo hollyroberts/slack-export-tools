@@ -19,7 +19,7 @@ class slackData():
         return clone
 
     def loadSlack(self):
-        print("Loading slack from: " + io.source_dir)
+        print("Loading slack from '" + io.source_dir + "'")
 
         # Load metadata
         self.metadata.loadSlack()
