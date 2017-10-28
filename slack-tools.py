@@ -16,7 +16,8 @@ SWITCH_DATA = {'c': True,
                's': False}
 SWITCH_DEFAULT = {'et': "export_text",
                   'ej': "export_json",
-                  'eh': "export_html"}
+                  'eh': "export_html",
+                  's': False}
 SWITCH_STATS = ('s',)
 
 # Vars
@@ -40,7 +41,7 @@ def exportStatistics():
     if not any(x in SWITCH_STATS for x in switches):
         return
 
-    s = stats(slack)
+    s = stats(slack, full_stats=misc.custStrToBool(switches['s'], "full"))
 
     if 's' in switches:
         s.exportPostStats()

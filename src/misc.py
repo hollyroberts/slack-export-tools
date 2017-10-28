@@ -29,3 +29,10 @@ class misc():
         else:
             print("Could not interpret '" + s + "' as boolean, assuming FALSE")
             return False
+
+    @staticmethod
+    def custStrToBool(s: str, pattern: str):
+        if type(s) == bool:
+            return s
+
+        return s.upper() == pattern.upper()

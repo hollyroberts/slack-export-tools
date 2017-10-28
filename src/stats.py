@@ -4,8 +4,9 @@ from openpyxl.styles import Alignment, Border, Font, Side
 from src.slack import *
 
 class stats():
-    def __init__(self, slack: slackData):
+    def __init__(self, slack: slackData, full_stats=False):
         self.slack = slack
+        self.full_stats = full_stats
 
         # Initialise blank maps and then calculate stats
         self.user_count = {}
@@ -60,9 +61,19 @@ class stats():
 
             self.channel_count[channel] = channel_count
 
+        # Delete empty keys https://stackoverflow.com/a/15158637
+        if self.full_stats:
+            return
+
+        self.channel_count = {k:v for k, v in self.channel_count.items() if v > 0}
+        self.user_count = {k:v for k, v in self.user_count.items() if v > 0}
+
     def __addStats(self, ws, values_ls: list, values_map: dict, prefix:str=''):
         i = 0
         for val in values_ls:
+            if val not in values_map:
+                continue
+
             # Calculate info
             messages = values_map[val]
             percentage = messages / self.tot_messages
