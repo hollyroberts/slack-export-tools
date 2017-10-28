@@ -99,6 +99,9 @@ class stats():
         ws['B1'].border = Border(bottom=Side(border_style='thin'))
         ws['C1'].border = Border(bottom=Side(border_style='thin'))
 
+        # Add filter rules
+        ws.auto_filter.ref = "A1:C" + str(len(self.slack.metadata.users))
+
     def __adjustColumnWidth(self, ws):
         # https://stackoverflow.com/a/39530676
 
