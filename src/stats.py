@@ -4,6 +4,13 @@ from openpyxl.styles import Alignment, Border, Font, Side
 from src.misc import *
 from src.slack import *
 
+class statsModes(Enum):
+    # Minimum - Remove all empty entries
+    MIN = 1
+    # Moderate - Remove empty entries for user and channel, create entries for blank days
+    MODERATE = 2
+    # Full - Remove no entries, create entries for blank days
+    FULL = 3
 
 class stats():
     SUBTYPES_WHITELIST = ('reminder_add',
@@ -12,9 +19,11 @@ class stats():
                           'file_mention',
                           'file_share')
 
-    def __init__(self, slack: slackData, full_stats=False):
+    # Default stats mode
+    __mode = statsModes.MODERATE
+
+    def __init__(self, slack: slackData):
         self.slack = slack
-        self.full_stats = full_stats
 
         # Initialise blank maps and then calculate stats
         self.user_count = {}
@@ -25,6 +34,16 @@ class stats():
 
         self.__calculateStats()
         self.tot_messages = sum(self.user_count.values())
+
+    # Change stats mode using strings, since we will be interpreting directly from the args
+    @staticmethod
+    def setModeStr(newMode: str):
+        for i in statsModes:
+            if i.name == newMode.upper():
+                stats.__mode = i
+                return
+
+        sys.exit("Incorrect stats mode specified. Please use one of the following: " + ", ".join(i.name for i in statsModes))
 
     def exportPostStats(self):
         wb = Workbook()
@@ -91,13 +110,10 @@ class stats():
 
             self.channel_count[channel] = channel_count
 
-        # Delete empty keys https://stackoverflow.com/a/15158637
-        if self.full_stats:
-            return
-
-        self.day_count = {k:v for k, v in self.day_count.items() if v > 0}
-        self.channel_count = {k:v for k, v in self.channel_count.items() if v > 0}
-        self.user_count = {k:v for k, v in self.user_count.items() if v > 0}
+        # Delete empty keys from users and channels https://stackoverflow.com/a/15158637
+        if stats.__shouldPerform(statsModes.MODERATE):
+            self.channel_count = {k: v for k, v in self.channel_count.items() if v > 0}
+            self.user_count = {k: v for k, v in self.user_count.items() if v > 0}
 
     def __addStats(self, ws, values_ls: list, values_map: dict, prefix:str='', format_func=str):
         i = 0
@@ -158,3 +174,7 @@ class stats():
                     pass
             adjusted_width = (max_length + 0.5) * 1.2
             ws.column_dimensions[column].width = adjusted_width
+
+    @staticmethod
+    def __shouldPerform(mode: statsModes):
+        return mode.value >= stats.__mode.value

@@ -16,8 +16,7 @@ SWITCH_DATA = {'c': True,
                's': False}
 SWITCH_DEFAULT = {'et': "export_text",
                   'ej': "export_json",
-                  'eh': "export_html",
-                  's': False}
+                  'eh': "export_html"}
 SWITCH_STATS = ('s',)
 
 # Vars
@@ -41,7 +40,7 @@ def exportStatistics():
     if not any(x in SWITCH_STATS for x in switches):
         return
 
-    s = stats(slack, full_stats=misc.custStrToBool(switches['s'], "full"))
+    s = stats(slack)
 
     if 's' in switches:
         s.exportPostStats()
@@ -86,6 +85,7 @@ def loadArgs():
     setLogMode()
     setExportMode()
     setExportLocations()
+    setStatsMode()
 
 def interpretArgs(argv):
     # Remove script location
@@ -140,6 +140,12 @@ def setSlackSource():
             source_dir += "\\"
 
     io.source_dir = source_dir
+
+def setStatsMode():
+    if 's' not in switches or switches['s'] is None:
+        return
+
+    stats.setModeStr(switches['s'])
 
 def setLogMode():
     if 'l' not in switches:
