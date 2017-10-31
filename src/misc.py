@@ -59,15 +59,36 @@ class misc():
     @staticmethod
     def strToEnum(enumType, newMode: str):
         for i in enumType:
-            if i.name == newMode.upper() and i.value > 0:
-                return i
+            if i.name == newMode.upper():
+                # Don't allow negative enums
+                if type(i.value) is not int:
+                    return i
+                if i.value > 0:
+                    return i
 
         # Remove modes from enum class name
-        enum_str = enumType.__name__[:5]
+        enum_str = enumType.__name__[:-5]
 
-        sys.exit("Could not interpret " + enum_str + " mode. Please use one of the following: " + ", ".join(i.name for i in enumType if i.value > 0))
+        # List of valid enums should exclude enums with negative values
+        valid_enums = []
+        for i in enumType:
+            if type(i.value) is int:
+                if i.value > 0:
+                    valid_enums.append(i.name)
+            else:
+                valid_enums.append(i.name)
+
+        sys.exit("Could not interpret " + enum_str + " mode. Please use one of the following: " + ", ".join(valid_enums))
 
     # Dates/times
+    @staticmethod
+    def interpretDate(date_str: str):
+        try:
+            return datetime.datetime.strptime(date_str, str(misc.dateMode.value))
+        except ValueError as e:
+            sys.exit("Could not convert '" + date_str + "' using " + misc.dateMode.name + " encoding (" + misc.dateMode.toExcel() + ")")
+
+    @staticmethod
     def daterange(d1, d2):
         # https://stackoverflow.com/a/14288620
         return (d1 + datetime.timedelta(days=i) for i in range((d2 - d1).days + 1))

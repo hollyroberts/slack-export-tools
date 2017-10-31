@@ -6,10 +6,13 @@ SWITCH_CHAR = '-'
 # Each switch maps to a boolean value, indicating whether or not data is required
 # Default data is also contained for certain switches
 SWITCH_DATA = {'c': True,
-               'i': True,
+               'de': True,
+               'df': True,
+               'ds': True,
                'et': False,
                'ej': False,
                'eh': False,
+               'i': True,
                'l': True,
                'o': True,
                'os': True,
@@ -86,6 +89,7 @@ def loadArgs():
     setExportMode()
     setExportLocations()
     setStatsMode()
+    setDateModes()
 
 def interpretArgs(argv):
     # Remove script location
@@ -130,6 +134,16 @@ def interpretArgs(argv):
             switches[switch] = argv[i]
 
         i += 1
+
+def setDateModes():
+    if 'df' in switches:
+        misc.dateMode = misc.strToEnum(dateModes, switches['df'])
+
+    if 'ds' in switches:
+        misc.interpretDate(switches['ds'])
+
+    if 'de' in switches:
+        misc.interpretDate(switches['de'])
 
 def setSlackSource():
     if 'i' not in switches or switches['i'] == "":
