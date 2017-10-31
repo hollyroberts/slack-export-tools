@@ -229,8 +229,6 @@ class export():
             if msg['file'] is None:
                 return msg['text']
 
-            file_user = self.slack.metadata.getUserName(msg['file'])
-
             # Is the user uploading the file or sharing it
             if msg['upload']:
                 ret += username + " uploaded a file: " + self.__getFileLink(msg)

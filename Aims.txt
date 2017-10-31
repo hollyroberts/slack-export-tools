@@ -1,6 +1,7 @@
 Generate statistics
 	Messages per user (exclude bots by default)
 	Messages per channel
+	Messages per day
 	Emoji usage
 		Text/Reactions/Combined
 
@@ -14,6 +15,7 @@ Export
 		Add a readme (Warn about UTC, Data may be incomplete)
 		Option to export as HTML, hyperlinks can be encoded and possibly even images
 	List of pins
+	Current user avatars
 
 Debug
 	List of message types/subtypes
