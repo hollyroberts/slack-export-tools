@@ -44,3 +44,7 @@ class misc():
     @staticmethod
     def formatDateToUK(d: datetime.date):
         return d.strftime('%d/%m/%Y')
+
+    def daterange(d1, d2):
+        # https://stackoverflow.com/a/14288620
+        return (d1 + datetime.timedelta(days=i) for i in range((d2 - d1).days + 1))

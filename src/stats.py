@@ -5,12 +5,17 @@ from src.misc import *
 from src.slack import *
 
 class statsModes(Enum):
-    # Minimum - Remove all empty entries
+    # Minimum - Remove empty entries for user and channel, do not add entries for blank days
     MIN = 1
-    # Moderate - Remove empty entries for user and channel, create entries for blank days
-    MODERATE = 2
+    # Medium - Remove empty entries for user and channel, create entries for blank days
+    MEDIUM = 2
     # Full - Remove no entries, create entries for blank days
     FULL = 3
+
+    def __le__(self, other):
+        return self.value <= other.value
+    def __ge__(self, other):
+        return self.value >= other.value
 
 class stats():
     SUBTYPES_WHITELIST = ('reminder_add',
@@ -20,7 +25,7 @@ class stats():
                           'file_share')
 
     # Default stats mode
-    __mode = statsModes.MODERATE
+    __mode = statsModes.MEDIUM
 
     def __init__(self, slack: slackData):
         self.slack = slack
@@ -110,8 +115,17 @@ class stats():
 
             self.channel_count[channel] = channel_count
 
+        # Add blank days
+        if stats.__mode >= statsModes.MEDIUM:
+            min_date = min(x for x in self.day_count)
+            max_date = max(x for x in self.day_count)
+
+            for date in misc.daterange(min_date, max_date):
+                if date not in self.day_count:
+                    self.day_count[date] = 0
+
         # Delete empty keys from users and channels https://stackoverflow.com/a/15158637
-        if stats.__shouldPerform(statsModes.MODERATE):
+        if stats.__mode <= statsModes.MEDIUM:
             self.channel_count = {k: v for k, v in self.channel_count.items() if v > 0}
             self.user_count = {k: v for k, v in self.user_count.items() if v > 0}
 
@@ -174,7 +188,3 @@ class stats():
                     pass
             adjusted_width = (max_length + 0.5) * 1.2
             ws.column_dimensions[column].width = adjusted_width
-
-    @staticmethod
-    def __shouldPerform(mode: statsModes):
-        return mode.value >= stats.__mode.value
