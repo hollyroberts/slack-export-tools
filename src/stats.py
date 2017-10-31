@@ -25,7 +25,7 @@ class stats():
                           'file_share')
 
     # Default stats mode
-    __mode = statsModes.MEDIUM
+    mode = statsModes.MEDIUM
 
     def __init__(self, slack: slackData):
         self.slack = slack
@@ -39,16 +39,6 @@ class stats():
 
         self.__calculateStats()
         self.tot_messages = sum(self.user_count.values())
-
-    # Change stats mode using strings, since we will be interpreting directly from the args
-    @staticmethod
-    def setModeStr(newMode: str):
-        for i in statsModes:
-            if i.name == newMode.upper():
-                stats.__mode = i
-                return
-
-        sys.exit("Incorrect stats mode specified. Please use one of the following: " + ", ".join(i.name for i in statsModes))
 
     def exportPostStats(self):
         wb = Workbook()
@@ -67,7 +57,7 @@ class stats():
         sorted_dates = sorted(self.day_count.keys())
 
         self.__addStats(wb_channels, self.slack.metadata.channels, self.channel_count, prefix='#')
-        self.__addStats(wb_days, sorted_dates, self.day_count, format_func=misc.formatDateToUK)
+        self.__addStats(wb_days, sorted_dates, self.day_count, format_func=misc.formatDate)
         self.__addStats(wb_users, self.slack.metadata.users, self.user_count)
 
         # Make it pretty
@@ -116,7 +106,7 @@ class stats():
             self.channel_count[channel] = channel_count
 
         # Add blank days
-        if stats.__mode >= statsModes.MEDIUM:
+        if stats.mode >= statsModes.MEDIUM:
             min_date = min(x for x in self.day_count)
             max_date = max(x for x in self.day_count)
 
@@ -125,7 +115,7 @@ class stats():
                     self.day_count[date] = 0
 
         # Delete empty keys from users and channels https://stackoverflow.com/a/15158637
-        if stats.__mode <= statsModes.MEDIUM:
+        if stats.mode <= statsModes.MEDIUM:
             self.channel_count = {k: v for k, v in self.channel_count.items() if v > 0}
             self.user_count = {k: v for k, v in self.user_count.items() if v > 0}
 

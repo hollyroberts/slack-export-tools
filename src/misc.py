@@ -1,6 +1,14 @@
 import datetime
+import sys
+from enum import Enum
+
+class dateModes(Enum):
+    ISO8601 = '%Y-%m-%d'
+    UK = '%d/%m/%Y'
 
 class misc():
+    dateMode = dateModes.ISO8601
+
     __TRUE_STRINGS = ['T', 'TRUE']
     __FALSE_STRINGS = ['F', 'FALSE']
 
@@ -40,10 +48,18 @@ class misc():
 
         return s.upper() == pattern.upper()
 
+    @staticmethod
+    def strToEnum(enumType, newMode: str):
+        for i in enumType:
+            if i.name == newMode.upper() and i.value > 0:
+                return i
+
+        sys.exit("Incorrect enum specified. Please use one of the following: " + ", ".join(i.name for i in enumType if i.value > 0))
+
     # Dates/times
     @staticmethod
-    def formatDateToUK(d: datetime.date):
-        return d.strftime('%d/%m/%Y')
+    def formatDate(d: datetime.date):
+        return d.strftime(dateModes.UK.value)
 
     def daterange(d1, d2):
         # https://stackoverflow.com/a/14288620

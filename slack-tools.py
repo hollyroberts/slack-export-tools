@@ -145,13 +145,13 @@ def setStatsMode():
     if 's' not in switches or switches['s'] is None:
         return
 
-    stats.setModeStr(switches['s'])
+    stats.mode = misc.strToEnum(statsModes, switches['s'])
 
 def setLogMode():
     if 'l' not in switches:
         return
 
-    log.setModeStr(switches['l'])
+    log.mode = misc.strToEnum(logModes, switches['l'])
 
 def setExportLocations():
     io.setExportDir(switches.get('o', ""))
