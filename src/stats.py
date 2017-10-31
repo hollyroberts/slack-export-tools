@@ -1,8 +1,9 @@
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Border, Font, Side
-import datetime
-from src.slack import *
+
 from src.misc import *
+from src.slack import *
+
 
 class stats():
     SUBTYPES_WHITELIST = ('reminder_add',
