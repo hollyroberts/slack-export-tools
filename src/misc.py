@@ -54,7 +54,10 @@ class misc():
             if i.name == newMode.upper() and i.value > 0:
                 return i
 
-        sys.exit("Incorrect enum specified. Please use one of the following: " + ", ".join(i.name for i in enumType if i.value > 0))
+        # Remove modes from enum class name
+        enum_str = enumType.__name__[:5]
+
+        sys.exit("Could not interpret " + enum_str + " mode. Please use one of the following: " + ", ".join(i.name for i in enumType if i.value > 0))
 
     # Dates/times
     @staticmethod
