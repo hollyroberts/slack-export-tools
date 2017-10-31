@@ -67,10 +67,12 @@ class slackMetaData():
     def __init__(self):
         # User metadata
         self.users = []
+        self.users_json = []
         self.users_map = {}
 
         # Channel metadata
         self.channels = []
+        self.channels_json = []
         self.channel_map = {}
 
     def getUserName(self, msg):
@@ -104,9 +106,12 @@ class slackMetaData():
 
     def loadSlack(self):
         # Load channels and users
-        self.channel_map = self.__loadChannelMap()
+        self.channels_json = io.loadJSONFile("channels.json")
+        self.channel_map = self.__mapJson(self.channels_json)
         self.channels = sorted(self.channel_map.values())
-        self.users_map = self.__loadUserMapping()
+
+        self.users_json = io.loadJSONFile("users.json")
+        self.users_map = self.__mapJson(self.users_json)
         self.users = sorted(list(self.users_map.values()))
 
     def clone(self):
@@ -119,22 +124,9 @@ class slackMetaData():
 
         return clone
 
-    def __loadChannelMap(self):
-        channel_data = io.loadJSONFile("channels.json")
-
-        # Build the array of channel names
+    def __mapJson(self, data):
         map = {}
-        for i in channel_data:
+        for i in data:
             map[i['id']] = i['name']
 
         return map
-
-    def __loadUserMapping(self):
-        user_data = io.loadJSONFile("users.json")
-
-        # Build the map from id --> name
-        users = {}
-        for i in user_data:
-            users[i['id']] = i['name']
-
-        return users
