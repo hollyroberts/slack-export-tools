@@ -57,7 +57,7 @@ class stats():
         sorted_dates = sorted(self.day_count.keys())
 
         self.__addStats(wb_channels, self.slack.metadata.channels, self.channel_count, prefix='#')
-        self.__addStats(wb_days, sorted_dates, self.day_count, format_func=misc.formatDate)
+        self.__addStats(wb_days, sorted_dates, self.day_count, entry_num_format=misc.dateMode.toExcel())
         self.__addStats(wb_users, self.slack.metadata.users, self.user_count)
 
         # Make it pretty
@@ -119,7 +119,7 @@ class stats():
             self.channel_count = {k: v for k, v in self.channel_count.items() if v > 0}
             self.user_count = {k: v for k, v in self.user_count.items() if v > 0}
 
-    def __addStats(self, ws, values_ls: list, values_map: dict, prefix:str='', format_func=str):
+    def __addStats(self, ws, values_ls: list, values_map: dict, prefix:str='', entry_num_format=None):
         i = 0
         for val in values_ls:
             if val not in values_map:
@@ -131,13 +131,20 @@ class stats():
             percentage = round(percentage, 3)
 
             # Save into workbook
-            ws.cell(row=(i + 2), column=1).value = prefix + format_func(val)
+            if not prefix == '':
+                ws.cell(row=(i + 2), column=1).value = prefix + val
+            else:
+                ws.cell(row=(i + 2), column=1).value = val
+            if entry_num_format is not None:
+                ws.cell(row=(i + 2), column=1).number_format = entry_num_format
+
             ws.cell(row=(i + 2), column=2).value = messages
             ws.cell(row=(i + 2), column=2).number_format = "0"
             ws.cell(row=(i + 2), column=3).value = percentage
             ws.cell(row=(i + 2), column=3).number_format = "0.0%"
 
-            # Center 2nd and 3rd column
+            # Left align 1st column, Center 2nd and 3rd column
+            ws.cell(row=(i + 2), column=1).alignment = Alignment(horizontal='left')
             ws.cell(row=(i + 2), column=2).alignment = Alignment(horizontal='center')
             ws.cell(row=(i + 2), column=3).alignment = Alignment(horizontal='center')
 
@@ -165,16 +172,22 @@ class stats():
         ws.auto_filter.ref = "A1:C" + str(len(self.slack.metadata.users))
 
     def __adjustColumnWidth(self, ws):
-        # https://stackoverflow.com/a/39530676
+        # modified from https://stackoverflow.com/a/39530676
 
         for col in ws.columns:
             max_length = 0
             column = col[0].column  # Get the column name
             for cell in col:
                 try:  # Necessary to avoid error on empty cells
-                    if len(str(cell.value)) > max_length:
-                        max_length = len(cell.value)
+                    if type(cell.value) is datetime.datetime:
+                        cell_str = cell.value.strftime(misc.dateMode.value)
+                    else:
+                        cell_str = str(cell.value)
+
+                    if len(cell_str) > max_length:
+                        max_length = len(cell_str)
                 except:
                     pass
+
             adjusted_width = (max_length + 0.5) * 1.2
             ws.column_dimensions[column].width = adjusted_width

@@ -6,6 +6,14 @@ class dateModes(Enum):
     ISO8601 = '%Y-%m-%d'
     UK = '%d/%m/%Y'
 
+    def toExcel(self):
+        # Only support values we use
+        s = self.value
+        s = s.replace("%d", "DD")
+        s = s.replace("%m", "MM")
+        s = s.replace("%Y", "YYYY")
+        return s
+
 class misc():
     dateMode = dateModes.ISO8601
 
@@ -60,10 +68,6 @@ class misc():
         sys.exit("Could not interpret " + enum_str + " mode. Please use one of the following: " + ", ".join(i.name for i in enumType if i.value > 0))
 
     # Dates/times
-    @staticmethod
-    def formatDate(d: datetime.date):
-        return d.strftime(dateModes.UK.value)
-
     def daterange(d1, d2):
         # https://stackoverflow.com/a/14288620
         return (d1 + datetime.timedelta(days=i) for i in range((d2 - d1).days + 1))
