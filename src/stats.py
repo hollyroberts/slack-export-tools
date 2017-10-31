@@ -5,6 +5,12 @@ from src.slack import *
 from src.misc import *
 
 class stats():
+    SUBTYPES_WHITELIST = ('reminder_add',
+                          'me_message',
+                          'file_comment',
+                          'file_mention',
+                          'file_share')
+
     def __init__(self, slack: slackData, full_stats=False):
         self.slack = slack
         self.full_stats = full_stats
@@ -61,10 +67,21 @@ class stats():
             channel_count = 0
 
             for msg in self.slack.channel_data[channel]:
-                if ('subtype' not in msg) and (msg['user'] != 'USLACKBOT'):
+                # Get timestamp
+                d = datetime.datetime.fromtimestamp(float(msg['ts'])).date()
+
+                # Handle special cases
+                if 'subtype' in msg:
+                    if msg['subtype'] not in stats.SUBTYPES_WHITELIST:
+                        continue
+                    elif msg['subtype'] == 'file_comment':  # Handle file_comment, since user data is in 'comment' field
+                        msg = msg['comment']
+                if 'user' not in msg:
+                    continue
+
+                if msg['user'] != 'USLACKBOT':
                     channel_count += 1
                     self.user_count[self.slack.metadata.getUserName(msg)] += 1
-                    d = dt = datetime.datetime.fromtimestamp(float(msg['ts'])).date()
 
                     if d in self.day_count:
                         self.day_count[d] += 1
