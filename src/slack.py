@@ -102,17 +102,19 @@ class slackMetaData():
         if username not in self.users_map:
             return False
 
-        return True
+        return not self.users_json[username]['is_bot']
 
     def loadSlack(self):
         # Load channels and users
         self.channels_json = io.loadJSONFile("channels.json")
         self.channel_map = self.__mapJson(self.channels_json)
         self.channels = sorted(self.channel_map.values())
+        self.channels_json = self.__arrayToMap(self.channels_json)
 
         self.users_json = io.loadJSONFile("users.json")
         self.users_map = self.__mapJson(self.users_json)
         self.users = sorted(list(self.users_map.values()))
+        self.users_json = self.__arrayToMap(self.users_json)
 
     def clone(self):
         clone = slackMetaData()
@@ -123,6 +125,12 @@ class slackMetaData():
         clone.channel_map = copy.deepcopy(self.channel_map)
 
         return clone
+
+    def __arrayToMap(self, json):
+        map = {}
+        for entry in json:
+            map[entry['id']] = entry
+        return map
 
     def __mapJson(self, data):
         map = {}
