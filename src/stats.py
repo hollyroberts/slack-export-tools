@@ -79,7 +79,7 @@ class stats():
                 if 'user' not in msg:
                     continue
 
-                if msg['user'] != 'USLACKBOT':
+                if self.slack.metadata.isDefinitelyUser(msg):
                     channel_count += 1
                     self.user_count[self.slack.metadata.getUserName(msg)] += 1
 

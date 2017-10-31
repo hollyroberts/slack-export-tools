@@ -88,6 +88,20 @@ class slackMetaData():
 
         return "Unknown"
 
+    def isDefinitelyUser(self, msg):
+        # Only return true if the 'user' field directly maps to a known user that is not a bot
+        if 'user' not in msg:
+            return False
+
+        username = msg['user']
+        if username == "USLACKBOT":
+            return False
+
+        if username not in self.users_map:
+            return False
+
+        return True
+
     def loadSlack(self):
         # Load channels and users
         self.channel_map = self.__loadChannelMap()
