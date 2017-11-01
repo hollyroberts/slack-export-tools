@@ -60,6 +60,11 @@ class stats():
         self.__addStats(wb_days, sorted_dates, self.day_count, entry_num_format=misc.dateMode.toExcel())
         self.__addStats(wb_users, self.slack.metadata.users, self.user_count)
 
+        # Add number of messages and export date range
+        self.__addStatsInfo(wb_channels)
+        self.__addStatsInfo(wb_days)
+        self.__addStatsInfo(wb_users)
+
         # Make it pretty
         self.__adjustColumnWidth(wb_channels)
         self.__adjustColumnWidth(wb_days)
@@ -118,6 +123,13 @@ class stats():
         if stats.mode <= statsModes.MEDIUM:
             self.channel_count = {k: v for k, v in self.channel_count.items() if v > 0}
             self.user_count = {k: v for k, v in self.user_count.items() if v > 0}
+
+    def __addStatsInfo(self, ws):
+        # Tot messages
+        ws['E1'] = "Total messages:"
+        ws['E1'].alignment = Alignment(horizontal='right')
+        ws['F1'] = int(self.tot_messages)
+        ws['F1'].alignment = Alignment(horizontal='center')
 
     def __addStats(self, ws, values_ls: list, values_map: dict, prefix:str='', entry_num_format=None):
         i = 0
