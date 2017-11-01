@@ -89,6 +89,10 @@ class misc():
             sys.exit("Could not convert '" + date_str + "' using " + misc.dateMode.name + " encoding (" + misc.dateMode.toExcel() + ")")
 
     @staticmethod
+    def formatDate(d: datetime.date):
+        return d.strftime(str(misc.dateMode.value))
+
+    @staticmethod
     def daterange(d1, d2):
         # https://stackoverflow.com/a/14288620
         return (d1 + datetime.timedelta(days=i) for i in range((d2 - d1).days + 1))

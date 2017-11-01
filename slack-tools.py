@@ -24,6 +24,8 @@ SWITCH_STATS = ('s',)
 
 # Vars
 switches = {}
+date_start = None
+date_end = None
 
 # FUNCS
 # Exporting
@@ -136,14 +138,16 @@ def interpretArgs(argv):
         i += 1
 
 def setDateModes():
+    global date_start, date_end
+
     if 'df' in switches:
         misc.dateMode = misc.strToEnum(dateModes, switches['df'])
 
     if 'ds' in switches:
-        misc.interpretDate(switches['ds'])
+        date_start = misc.interpretDate(switches['ds'])
 
     if 'de' in switches:
-        misc.interpretDate(switches['de'])
+        date_end = misc.interpretDate(switches['de'])
 
 def setSlackSource():
     if 'i' not in switches or switches['i'] == "":
@@ -184,8 +188,12 @@ def setExportMode():
 
 # START OF PROGRAM
 loadArgs()
+
 slack = slackData()
 slack.loadSlack()
+if date_start is not None or date_end is not None:
+    slack.filter(date_start, date_end)
+
 exportHistory()
 exportStatistics()
 log.log(logModes.LOW, "Finished")

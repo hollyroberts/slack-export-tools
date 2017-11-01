@@ -1,6 +1,8 @@
 import copy
 
 from src.io import *
+from src.misc import *
+
 
 class slackData():
     def __init__(self):
@@ -16,6 +18,31 @@ class slackData():
         clone.channel_threads = copy.deepcopy(self.channel_threads)
 
         return clone
+
+    def filter(self, date_start, date_end):
+        # Log dates
+        if date_start is None and date_end is None:
+            return
+        if date_end is None:
+            log.log(logModes.LOW, "Filtering messages to dates after " + misc.formatDate(date_start) + " (inclusive)")
+        elif date_start is None:
+            log.log(logModes.LOW, "Filtering messages to dates before " + misc.formatDate(date_end) + " (exclusive)")
+        else:
+            log.log(logModes.LOW, "Filtering messages to dates between " + misc.formatDate(date_start) + " (inclusive) and " + misc.formatDate(date_end) + " (exclusive)")
+
+        for c in self.metadata.channels:
+            self.channel_data[c] = list(msg for msg in self.channel_data[c] if self.includeMsgTS(msg, date_start, date_end))
+            self.channel_threads[c] = self.__loadChannelThreads(self.channel_data[c])
+
+    def includeMsgTS(self, msg, ds, de):
+        timestamp = msg['ts']
+        dt = datetime.datetime.fromtimestamp(float(timestamp))
+
+        if ds is not None and dt < ds:
+            return False
+        if de is not None and dt > de:
+            return False
+        return True
 
     def loadSlack(self):
         print("Loading slack from '" + io.source_dir + "'")
