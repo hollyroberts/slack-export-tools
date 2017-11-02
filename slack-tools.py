@@ -1,5 +1,6 @@
 from src.export import *
 from src.stats import *
+from src.pins import *
 
 # CONSTANTS
 SWITCH_CHAR = '-'
@@ -16,10 +17,12 @@ SWITCH_DATA = {'c': True,
                'l': True,
                'o': True,
                'os': True,
+               'p': False,
                's': False}
 SWITCH_DEFAULT = {'et': "export_text",
                   'ej': "export_json",
-                  'eh': "export_html"}
+                  'eh': "export_html",
+                  'p': "pins"}
 SWITCH_STATS = ('s',)
 
 # Vars
@@ -40,6 +43,11 @@ def exportHistory():
 
     if 'eh' in switches:
         e.exportChannelData(io.html_dir, exportModes.HTML)
+
+def exportOther():
+    if 'p' in switches:
+        p = pins(slack)
+        p.export(io.pins_dir)
 
 def exportStatistics():
     if not any(x in SWITCH_STATS for x in switches):
@@ -172,9 +180,12 @@ def setLogMode():
     log.mode = misc.strToEnum(logModes, switches['l'])
 
 def setExportLocations():
+    # Main dir, stats, and pins
     io.setExportDir(switches.get('o', ""))
     io.setStatsDir(switches.get('os', "stats\\"))
+    io.setPinsDir(switches.get('p', "pins\\"))
 
+    # History export
     io.setHtmlDir(switches.get('eh', SWITCH_DEFAULT['eh']))
     io.setJsonDir(switches.get('ej', SWITCH_DEFAULT['ej']))
     io.setTextDir(switches.get('et', SWITCH_DEFAULT['et']))
@@ -196,4 +207,5 @@ if date_start is not None or date_end is not None:
 
 exportHistory()
 exportStatistics()
+exportOther()
 log.log(logModes.LOW, "Finished")

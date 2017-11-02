@@ -5,17 +5,21 @@ import os
 
 class io():
     # Store parts so we can reconstruct the full path
+    __pins_dir = ""
+    __stats_dir = ""
+
     __html_dir = ""
     __json_dir = ""
-    __stats_dir = ""
     __text_dir = ""
 
     source_dir = ""
     export_dir = ""
 
+    pins_dir = __pins_dir
+    stats_dir = __stats_dir
+
     html_dir = __html_dir
     json_dir = __json_dir
-    stats_dir = __stats_dir
     text_dir = __text_dir
 
     def __init__(self):
@@ -48,6 +52,11 @@ class io():
     def setJsonDir(dir: str):
         io.__json_dir = dir
         io.json_dir = io.combinePaths(io.export_dir, io.__json_dir)
+
+    @staticmethod
+    def setPinsDir(dir: str):
+        io.__pins_dir = dir
+        io.pins_dir = io.combinePaths(io.export_dir, io.__pins_dir)
 
     @staticmethod
     def setStatsDir(dir: str):
