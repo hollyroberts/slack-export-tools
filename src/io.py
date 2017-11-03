@@ -5,8 +5,8 @@ import os
 
 class io():
     # Store parts so we can reconstruct the full path
+    __info_dir = ""
     __pins_dir = ""
-    __stats_dir = ""
 
     __html_dir = ""
     __json_dir = ""
@@ -15,8 +15,8 @@ class io():
     source_dir = ""
     export_dir = ""
 
+    info_dir = __info_dir
     pins_dir = __pins_dir
-    stats_dir = __stats_dir
 
     html_dir = __html_dir
     json_dir = __json_dir
@@ -30,7 +30,7 @@ class io():
         io.export_dir = io.combinePaths(dir)
         io.html_dir = io.combinePaths(dir, io.__html_dir)
         io.json_dir = io.combinePaths(dir, io.__json_dir)
-        io.stats_dir = io.combinePaths(dir, io.__stats_dir)
+        io.info_dir = io.combinePaths(dir, io.__info_dir)
         io.text_dir = io.combinePaths(dir, io.__text_dir)
 
     @staticmethod
@@ -56,12 +56,12 @@ class io():
     @staticmethod
     def setPinsDir(dir: str):
         io.__pins_dir = dir
-        io.pins_dir = io.combinePaths(io.export_dir, io.__pins_dir)
+        io.pins_dir = io.combinePaths(io.export_dir, io.__info_dir, io.__pins_dir)
 
     @staticmethod
-    def setStatsDir(dir: str):
-        io.__stats_dir = dir
-        io.stats_dir = io.combinePaths(io.export_dir, io.__stats_dir)
+    def setInfoDir(dir: str):
+        io.__info_dir = dir
+        io.info_dir = io.combinePaths(io.export_dir, io.__info_dir)
 
     @staticmethod
     def setTextDir(dir: str):

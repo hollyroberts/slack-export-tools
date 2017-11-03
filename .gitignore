@@ -42,7 +42,7 @@ Thumbs.db
 /export_html
 /export_json
 /export_text
-/stats
+/info
 .idea
 
 src/slack_data.py

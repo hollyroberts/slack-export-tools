@@ -42,7 +42,7 @@ class stats():
 
     def exportPostStats(self):
         wb = Workbook()
-        out_file = io.stats_dir + "Post stats.xlsx"
+        out_file = io.info_dir + "Post stats.xlsx"
 
         # Create two sheets for users and channels
         wb_users = wb.active
@@ -72,7 +72,7 @@ class stats():
 
         # Save
         log.log(logModes.LOW, "Exporting statistics to '" + out_file + "'")
-        io.ensureDir(io.stats_dir)
+        io.ensureDir(io.info_dir)
 
         try:
             wb.save(filename=out_file)

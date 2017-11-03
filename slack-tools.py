@@ -16,7 +16,7 @@ SWITCH_DATA = {'c': True,
                'i': True,
                'l': True,
                'o': True,
-               'os': True,
+               'oi': True,
                'p': False,
                's': False}
 SWITCH_DEFAULT = {'et': "export_text",
@@ -182,7 +182,7 @@ def setLogMode():
 def setExportLocations():
     # Main dir, stats, and pins
     io.setExportDir(switches.get('o', ""))
-    io.setStatsDir(switches.get('os', "stats\\"))
+    io.setInfoDir(switches.get('oi', "info\\"))
     io.setPinsDir(switches.get('p', "pins\\"))
 
     # History export
