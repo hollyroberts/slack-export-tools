@@ -160,7 +160,7 @@ class export():
             self.__last_date = date
 
         # Timestamp
-        body_str = "[" + misc.padInt(time.hour) + ":" + misc.padInt(time.minute) + "] "
+        body_str = export.formatTimestamp(timestamp)
 
         # Get subtype and username
         subtype = None
@@ -418,3 +418,16 @@ class export():
             msg = msg.replace(match.group(), new_text)
 
         return msg
+
+    @staticmethod
+    def formatTimestamp(ts, full=False):
+        dt = datetime.datetime.fromtimestamp(float(ts))
+        date = dt.date()
+        time = dt.time()
+
+        time_str = "["
+        if full:
+            time_str += misc.formatDate(date) + " - "
+
+        time_str += misc.padInt(time.hour) + ":" + misc.padInt(time.minute) + "] "
+        return time_str
