@@ -6,15 +6,16 @@ class pins():
 
     def export(self, dir: str):
         for channel_id in self.slack.metadata.channel_map.keys():
-            current_pins = self.currentPins(channel_id, self.slack.metadata.channels_json[channel_id])
+            channel_name = self.slack.metadata.channel_map[channel_id]
 
-    def currentPins(self, channel_id, channel_json):
+            current_pins = self.currentPins(channel_name, self.slack.metadata.channels_json[channel_id])
+
+    def currentPins(self, channel_name, channel_json):
         # Make sure there are pins
         if 'pins' not in channel_json:
             return []
 
         # Vars
-        channel_name = self.slack.metadata.channel_map[channel_id]
         pins_not_found = 0
         pins = []
 
@@ -29,7 +30,7 @@ class pins():
             # Search through channel messages
             for x in self.slack.channel_data[channel_name]:
                 if x['ts'] == pin['id']:
-                    pins.append(x)
+                    pins.append([pin, x])
                     found_pin = True
                     break
 
