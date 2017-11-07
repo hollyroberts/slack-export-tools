@@ -13,7 +13,7 @@ class files():
 
         for channel_name in self.slack.metadata.channels:
             log.log(logModes.MEDIUM, "Downloading " + str(len(self.channel_files[channel_name])) + " files from #" + channel_name)
-            io.ensureDir(channel_name)
+            io.ensureDir(io.file_dir + channel_name)
 
             for file_msg in self.channel_files[channel_name]:
                 self.__downloadFile(file_msg)

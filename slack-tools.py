@@ -188,7 +188,7 @@ def setLogMode():
 def setExportLocations():
     # Main dir, files, pins, stats
     io.setExportDir(switches.get('o', ""))
-    io.setHtmlDir(switches.get('f', SWITCH_DEFAULT['f']))
+    io.setFileDir(switches.get('f', SWITCH_DEFAULT['f']))
     io.setInfoDir(switches.get('oi', "info\\"))
     io.setPinsDir(switches.get('p', SWITCH_DEFAULT['p']))
 
