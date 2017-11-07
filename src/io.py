@@ -87,7 +87,7 @@ class io():
     def loadJSONFile(file):
         loc = io.source_dir + file
 
-        log.log(logModes.HIGH, "Reading '" + loc + "'")
+        log.log(logModes.FULL, "Reading '" + loc + "'")
 
         file = open(loc, "r", encoding="utf8")
         data = file.read()

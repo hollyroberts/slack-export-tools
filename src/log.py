@@ -5,6 +5,7 @@ class logModes(Enum):
     LOW = 1
     MEDIUM = 2
     HIGH = 3
+    FULL = 4
 
     # Use minus codes for errors/warnings
     ERROR = -1
