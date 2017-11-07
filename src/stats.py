@@ -1,7 +1,6 @@
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Border, Font, Side
 
-from src.misc import *
 from src.slack import *
 
 class statsModes(Enum):

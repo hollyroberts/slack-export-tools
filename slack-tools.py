@@ -1,6 +1,6 @@
-from src.export import *
 from src.stats import *
 from src.pins import *
+from src.files import *
 
 # CONSTANTS
 SWITCH_CHAR = '-'
@@ -13,6 +13,7 @@ SWITCH_DATA = {'c': True,
                'et': False,
                'ej': False,
                'eh': False,
+               'f': False,
                'i': True,
                'l': True,
                'o': True,
@@ -48,6 +49,9 @@ def exportOther():
     if 'p' in switches:
         p = pins(slack)
         p.export(io.pins_dir)
+
+    if 'f' in switches:
+        f = files(slack)
 
 def exportStatistics():
     if not any(x in SWITCH_STATS for x in switches):
