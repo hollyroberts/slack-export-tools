@@ -8,6 +8,7 @@ class io():
     __info_dir = ""
     __pins_dir = ""
 
+    __file_dir = ""
     __html_dir = ""
     __json_dir = ""
     __text_dir = ""
@@ -18,6 +19,7 @@ class io():
     info_dir = __info_dir
     pins_dir = __pins_dir
 
+    file_dir = __file_dir
     html_dir = __html_dir
     json_dir = __json_dir
     text_dir = __text_dir
@@ -28,9 +30,12 @@ class io():
     @staticmethod
     def setExportDir(dir: str):
         io.export_dir = io.combinePaths(dir)
+
+        io.file_dir = io.combinePaths(dir, io.__file_dir)
         io.html_dir = io.combinePaths(dir, io.__html_dir)
-        io.json_dir = io.combinePaths(dir, io.__json_dir)
         io.info_dir = io.combinePaths(dir, io.__info_dir)
+        io.json_dir = io.combinePaths(dir, io.__json_dir)
+        io.pins_dir = io.combinePaths(io.export_dir, io.__info_dir, io.__pins_dir)
         io.text_dir = io.combinePaths(dir, io.__text_dir)
 
     @staticmethod
@@ -42,6 +47,11 @@ class io():
                 dir += "\\"
 
         return dir
+
+    @staticmethod
+    def setFileDir(dir: str):
+        io.__file_dir = dir
+        io.file_dir = io.combinePaths(io.export_dir, io.__file_dir)
 
     @staticmethod
     def setHtmlDir(dir: str):

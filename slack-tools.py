@@ -23,6 +23,7 @@ SWITCH_DATA = {'c': True,
 SWITCH_DEFAULT = {'et': "export_text",
                   'ej': "export_json",
                   'eh': "export_html",
+                  'f': "files",
                   'p': "pins"}
 SWITCH_STATS = ('s',)
 
@@ -52,6 +53,7 @@ def exportOther():
 
     if 'f' in switches:
         f = files(slack)
+        f.downloadFiles()
 
 def exportStatistics():
     if not any(x in SWITCH_STATS for x in switches):
@@ -184,10 +186,11 @@ def setLogMode():
     log.mode = misc.strToEnum(logModes, switches['l'])
 
 def setExportLocations():
-    # Main dir, stats, and pins
+    # Main dir, files, pins, stats
     io.setExportDir(switches.get('o', ""))
+    io.setHtmlDir(switches.get('f', SWITCH_DEFAULT['f']))
     io.setInfoDir(switches.get('oi', "info\\"))
-    io.setPinsDir(switches.get('p', "pins\\"))
+    io.setPinsDir(switches.get('p', SWITCH_DEFAULT['p']))
 
     # History export
     io.setHtmlDir(switches.get('eh', SWITCH_DEFAULT['eh']))

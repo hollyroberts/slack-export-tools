@@ -8,6 +8,16 @@ class files():
 
         self.__getFileLocations()
 
+    def downloadFiles(self):
+        log.log(logModes.LOW, "Downloading referenced files found")
+
+        for channel_name in self.slack.metadata.channels:
+            log.log(logModes.MEDIUM, "Downloading " + str(len(self.channel_files[channel_name])) + " files from #" + channel_name)
+            io.ensureDir(channel_name)
+
+            for file_msg in self.channel_files[channel_name]:
+                self.__downloadFile(file_msg)
+
     def __getFileLocations(self):
         log.log(logModes.LOW, "Finding referenced files")
 
@@ -35,3 +45,6 @@ class files():
             self.channel_files[channel_name].append(msg)
             return True
         return False
+
+    def __downloadFile(self, file_msg):
+        download_url = file_msg['file']['url_private_download']

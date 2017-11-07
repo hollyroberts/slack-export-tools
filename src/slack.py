@@ -101,6 +101,8 @@ class slackMetaData():
         self.channels_json = []
         self.channel_map = {}
 
+        self.team_id = ""
+
     def getUserName(self, msg):
         # Prefer user over username field, since this is an ID and username can be present but blank
         if 'user' in msg:
@@ -141,6 +143,10 @@ class slackMetaData():
         self.users_map = self.__mapJson(self.users_json)
         self.users = sorted(list(self.users_map.values()))
         self.users_json = self.__arrayToMap(self.users_json)
+
+        # The Team ID is in each users profile, so we can get it this way
+        # Not very clean though :/
+        self.team_id = next(iter(self.users_json.values()))['profile']['team']
 
     def clone(self):
         clone = slackMetaData()
