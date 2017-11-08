@@ -80,9 +80,13 @@ class files():
 
         log.log(logModes.HIGH, "Downloading file from '" + download_url + "' (" + file_size + ")")
 
-        try:
-            urllib.request.urlretrieve(download_url, file_dir + save_name)
-        except Exception as e:
-            log.log(logModes.HIGH, str(e))
-            return False
+        if not os.path.exists(file_dir + save_name):
+            try:
+                urllib.request.urlretrieve(download_url, file_dir + save_name)
+            except Exception as e:
+                log.log(logModes.HIGH, str(e))
+                return False
+        else:
+            log.log(logModes.HIGH, "File already exists in download location '" + file_dir + save_name + "'")
+
         return True
