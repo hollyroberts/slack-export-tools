@@ -12,13 +12,31 @@ class files():
     def downloadFiles(self):
         log.log(logModes.LOW, "Downloading referenced files found")
 
+        tot_files = 0
+        tot_success = 0
+
         for channel_name in self.slack.metadata.channels:
-            log.log(logModes.MEDIUM, "Downloading " + str(len(self.channel_files[channel_name])) + " files from #" + channel_name)
+            num_files = len(self.channel_files[channel_name])
+            if (num_files == 0):
+                continue
+
+            log.log(logModes.MEDIUM, "Downloading " + str(num_files) + " files from #" + channel_name)
             dir = io.file_dir + channel_name + "\\"
             io.ensureDir(io.file_dir + channel_name)
 
+            files = 0
+            success = 0
+
             for file_msg in self.channel_files[channel_name]:
-                self.__downloadFile(file_msg, dir)
+                files += 1
+                if self.__downloadFile(file_msg, dir):
+                    success += 1
+
+            log.log(logModes.MEDIUM, "Successfully downloaded " + str(success) + "/" + str(files) + " files from #" + channel_name)
+            tot_files += files
+            tot_success += success
+
+        log.log(logModes.LOW, "Successfully downloaded " + str(tot_success) + "/" + str(tot_files) + " files from slack")
 
     def __getFileLocations(self):
         log.log(logModes.LOW, "Finding referenced files")
@@ -62,4 +80,9 @@ class files():
 
         log.log(logModes.HIGH, "Downloading file from '" + download_url + "' (" + file_size + ")")
 
-        urllib.request.urlretrieve(download_url, file_dir + save_name)
+        try:
+            urllib.request.urlretrieve(download_url, file_dir + save_name)
+        except Exception as e:
+            log.log(logModes.HIGH, str(e))
+            return False
+        return True
