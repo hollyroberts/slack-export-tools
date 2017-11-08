@@ -1,5 +1,4 @@
 from src.export import *
-import urllib.request
 
 class files():
     def __init__(self, slack: slackData):
@@ -80,13 +79,4 @@ class files():
 
         log.log(logModes.HIGH, "Downloading file from '" + download_url + "' (" + file_size + ")")
 
-        if not os.path.exists(file_dir + save_name):
-            try:
-                urllib.request.urlretrieve(download_url, file_dir + save_name)
-            except Exception as e:
-                log.log(logModes.HIGH, str(e))
-                return False
-        else:
-            log.log(logModes.HIGH, "File already exists in download location '" + file_dir + save_name + "'")
-
-        return True
+        return misc.download(download_url, file_dir + save_name)

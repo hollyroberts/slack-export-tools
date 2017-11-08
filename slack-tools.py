@@ -1,12 +1,14 @@
 from src.stats import *
 from src.pins import *
 from src.files import *
+from src.avatars import *
 
 # CONSTANTS
 SWITCH_CHAR = '-'
 # Each switch maps to a boolean value, indicating whether or not data is required
 # Default data is also contained for certain switches
-SWITCH_DATA = {'c': True,
+SWITCH_DATA = {'a': False,
+               'c': True,
                'de': True,
                'df': True,
                'ds': True,
@@ -20,7 +22,8 @@ SWITCH_DATA = {'c': True,
                'oi': True,
                'p': False,
                's': False}
-SWITCH_DEFAULT = {'et': "export_text",
+SWITCH_DEFAULT = {'a': "avatars",
+                  'et': "export_text",
                   'ej': "export_json",
                   'eh': "export_html",
                   'f': "files",
@@ -54,6 +57,10 @@ def exportOther():
     if 'f' in switches:
         f = files(slack)
         f.downloadFiles()
+
+    if 'a' in switches:
+        a = avatars(slack)
+        a.exportAvatars(io.avatar_dir)
 
 def exportStatistics():
     if not any(x in SWITCH_STATS for x in switches):
@@ -188,8 +195,9 @@ def setLogMode():
 def setExportLocations():
     # Main dir, files, pins, stats
     io.setExportDir(switches.get('o', ""))
+    io.setAvatarDir(switches.get('a', SWITCH_DEFAULT['a']))
     io.setFileDir(switches.get('f', SWITCH_DEFAULT['f']))
-    io.setInfoDir(switches.get('oi', "info\\"))
+    io.setInfoDir(switches.get('oi', "info"))
     io.setPinsDir(switches.get('p', SWITCH_DEFAULT['p']))
 
     # History export

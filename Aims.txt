@@ -16,6 +16,7 @@ Export
 		Option to export as HTML, hyperlinks can be encoded and possibly even images
 	List of pins
 	Current user avatars
+	Files
 
 Debug
 	List of message types/subtypes

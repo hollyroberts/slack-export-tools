@@ -2,10 +2,10 @@ from src.log import *
 import json
 import os
 
-
 class io():
     # Store parts so we can reconstruct the full path
     __info_dir = ""
+    __avatar_dir = ""
     __pins_dir = ""
 
     __file_dir = ""
@@ -17,6 +17,7 @@ class io():
     export_dir = ""
 
     info_dir = __info_dir
+    avatar_dir = __avatar_dir
     pins_dir = __pins_dir
 
     file_dir = __file_dir
@@ -28,15 +29,14 @@ class io():
         pass
 
     @staticmethod
-    def setExportDir(dir: str):
-        io.export_dir = io.combinePaths(dir)
-
-        io.file_dir = io.combinePaths(dir, io.__file_dir)
-        io.html_dir = io.combinePaths(dir, io.__html_dir)
-        io.info_dir = io.combinePaths(dir, io.__info_dir)
-        io.json_dir = io.combinePaths(dir, io.__json_dir)
+    def refreshDirLocations():
+        io.avatar_dir = io.combinePaths(io.export_dir, io.__info_dir, io.__avatar_dir)
+        io.file_dir = io.combinePaths(io.export_dir, io.__file_dir)
+        io.html_dir = io.combinePaths(io.export_dir, io.__html_dir)
+        io.info_dir = io.combinePaths(io.export_dir, io.__info_dir)
+        io.json_dir = io.combinePaths(io.export_dir, io.__json_dir)
         io.pins_dir = io.combinePaths(io.export_dir, io.__info_dir, io.__pins_dir)
-        io.text_dir = io.combinePaths(dir, io.__text_dir)
+        io.text_dir = io.combinePaths(io.export_dir, io.__text_dir)
 
     @staticmethod
     def combinePaths(*args: str):
@@ -49,34 +49,44 @@ class io():
         return dir
 
     @staticmethod
+    def setExportDir(dir: str):
+        io.export_dir = io.combinePaths(dir)
+        io.refreshDirLocations()
+
+    @staticmethod
     def setFileDir(dir: str):
         io.__file_dir = dir
-        io.file_dir = io.combinePaths(io.export_dir, io.__file_dir)
+        io.refreshDirLocations()
 
     @staticmethod
     def setHtmlDir(dir: str):
         io.__html_dir = dir
-        io.html_dir = io.combinePaths(io.export_dir, io.__html_dir)
+        io.refreshDirLocations()
 
     @staticmethod
     def setJsonDir(dir: str):
         io.__json_dir = dir
-        io.json_dir = io.combinePaths(io.export_dir, io.__json_dir)
+        io.refreshDirLocations()
+
+    @staticmethod
+    def setAvatarDir(dir: str):
+        io.__avatar_dir = dir
+        io.refreshDirLocations()
 
     @staticmethod
     def setPinsDir(dir: str):
         io.__pins_dir = dir
-        io.pins_dir = io.combinePaths(io.export_dir, io.__info_dir, io.__pins_dir)
+        io.refreshDirLocations()
 
     @staticmethod
     def setInfoDir(dir: str):
         io.__info_dir = dir
-        io.info_dir = io.combinePaths(io.export_dir, io.__info_dir)
+        io.refreshDirLocations()
 
     @staticmethod
     def setTextDir(dir: str):
         io.__text_dir = dir
-        io.text_dir = io.combinePaths(io.export_dir, io.__text_dir)
+        io.refreshDirLocations()
 
     @staticmethod
     def bytesToStr(size: int, precision=2):
@@ -90,6 +100,9 @@ class io():
 
     @staticmethod
     def ensureDir(dir: str):
+        if dir == '':
+            return
+
         if not os.path.exists(dir):
             os.makedirs(dir)
 

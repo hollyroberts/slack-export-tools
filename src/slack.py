@@ -3,7 +3,6 @@ import copy
 from src.io import *
 from src.misc import *
 
-
 class slackData():
     def __init__(self):
         self.metadata = slackMetaData()
@@ -118,12 +117,12 @@ class slackMetaData():
 
         return "Unknown"
 
-    def isDefinitelyUser(self, msg):
+    def isDefinitelyUser(self, json):
         # Only return true if the 'user' field directly maps to a known user that is not a bot
-        if 'user' not in msg:
+        if 'user' not in json:
             return False
 
-        username = msg['user']
+        username = json['user']
         if username == "USLACKBOT":
             return False
 

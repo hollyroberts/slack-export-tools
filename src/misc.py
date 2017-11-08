@@ -1,6 +1,8 @@
 import datetime
-import sys
-from enum import Enum
+import os
+import urllib.request
+
+from src.log import *
 
 class dateModes(Enum):
     ISO8601 = '%Y-%m-%d'
@@ -79,6 +81,20 @@ class misc():
                 valid_enums.append(i.name)
 
         sys.exit("Could not interpret " + enum_str + " mode. Please use one of the following: " + ", ".join(valid_enums))
+
+    # Downloads
+    @staticmethod
+    def download(source: str, save_loc: str):
+        if not os.path.exists(save_loc):
+            try:
+                urllib.request.urlretrieve(source, save_loc)
+            except Exception as e:
+                log.log(logModes.HIGH, str(e))
+                return False
+        else:
+            log.log(logModes.HIGH, "File already exists in download location '" + save_loc + "'")
+
+        return True
 
     # Dates/times
     @staticmethod
