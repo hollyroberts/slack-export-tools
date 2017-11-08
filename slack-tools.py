@@ -8,6 +8,7 @@ SWITCH_CHAR = '-'
 # Each switch maps to a boolean value, indicating whether or not data is required
 # Default data is also contained for certain switches
 SWITCH_DATA = {'a': False,
+               'aa': True,
                'c': True,
                'de': True,
                'df': True,
@@ -109,6 +110,7 @@ def loadArgs():
     interpretArgs(sys.argv)
     setSlackSource()
     setLogMode()
+    setAvatarMode()
     setExportMode()
     setExportLocations()
     setStatsMode()
@@ -211,6 +213,12 @@ def setExportMode():
         mode = misc.strToBool(switches['c'])
 
     export.COMPACT_EXPORT = mode
+
+def setAvatarMode():
+    mode = False
+    if 'aa' in switches:
+        mode = misc.strToBool(switches['aa'])
+    avatars.ALL_USERS = mode
 
 # START OF PROGRAM
 loadArgs()

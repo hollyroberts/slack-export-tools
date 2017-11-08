@@ -1,5 +1,4 @@
 from src.slack import *
-import urllib.request
 
 class avatars():
     IMAGE_SIZE_ORDER = ['original',
@@ -9,6 +8,8 @@ class avatars():
                         '48',
                         '32',
                         '24']
+
+    ALL_USERS = False
 
     def __init__(self, slack: slackData):
         self.slack = slack
@@ -22,6 +23,9 @@ class avatars():
             user_name = self.slack.metadata.users_map[user_id]
 
             if user_json['is_bot']:
+                continue
+
+            if not avatars.ALL_USERS and user_json['deleted']:
                 continue
 
             download_url = avatars.getLargestImage(user_json['profile'])
