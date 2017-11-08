@@ -420,7 +420,7 @@ class export():
         return msg
 
     @staticmethod
-    def formatTimestamp(ts, full=False):
+    def formatTimestamp(ts, full=False, min_divide_char=':'):
         dt = datetime.datetime.fromtimestamp(float(ts))
         date = dt.date()
         time = dt.time()
@@ -429,5 +429,5 @@ class export():
         if full:
             time_str += misc.formatDate(date) + " - "
 
-        time_str += misc.padInt(time.hour) + ":" + misc.padInt(time.minute) + "] "
+        time_str += misc.padInt(time.hour) + min_divide_char + misc.padInt(time.minute) + "] "
         return time_str

@@ -79,6 +79,16 @@ class io():
         io.text_dir = io.combinePaths(io.export_dir, io.__text_dir)
 
     @staticmethod
+    def bytesToStr(size: int, precision=2):
+        # https://stackoverflow.com/a/32009595
+        suffixes = ['B', 'KB', 'MB', 'GB', 'TB']
+        suffixIndex = 0
+        while size > 1024 and suffixIndex < 4:
+            suffixIndex += 1  # increment the index of the suffix
+            size = size / 1024.0  # apply the division
+        return "%.*f%s" % (precision, size, suffixes[suffixIndex])
+
+    @staticmethod
     def ensureDir(dir: str):
         if not os.path.exists(dir):
             os.makedirs(dir)

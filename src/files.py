@@ -1,4 +1,5 @@
-from src.slack import *
+from src.export import *
+import urllib.request
 
 class files():
     def __init__(self, slack: slackData):
@@ -13,10 +14,11 @@ class files():
 
         for channel_name in self.slack.metadata.channels:
             log.log(logModes.MEDIUM, "Downloading " + str(len(self.channel_files[channel_name])) + " files from #" + channel_name)
+            dir = io.file_dir + channel_name + "\\"
             io.ensureDir(io.file_dir + channel_name)
 
             for file_msg in self.channel_files[channel_name]:
-                self.__downloadFile(file_msg)
+                self.__downloadFile(file_msg, dir)
 
     def __getFileLocations(self):
         log.log(logModes.LOW, "Finding referenced files")
@@ -46,5 +48,18 @@ class files():
             return True
         return False
 
-    def __downloadFile(self, file_msg):
+    def __downloadFile(self, file_msg, file_dir):
         download_url = file_msg['file']['url_private_download']
+
+        file_size = io.bytesToStr(file_msg['file']['size'])
+
+        file_name = file_msg['file']['name']
+        file_name = re.sub('[\\\/:*?"<>|]', '', file_name)
+
+        save_name = export.formatTimestamp(file_msg['file']['timestamp'], full=True, min_divide_char=';')
+        save_name += "- " + self.slack.metadata.getUserName(file_msg['file']) + " - "
+        save_name += file_name
+
+        log.log(logModes.HIGH, "Downloading file from '" + download_url + "' (" + file_size + ")")
+
+        urllib.request.urlretrieve(download_url, file_dir + save_name)
