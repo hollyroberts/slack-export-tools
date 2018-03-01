@@ -21,7 +21,10 @@ class log():
     @staticmethod
     def log(logMode: logModes, text: str):
         if log.shouldLog(logMode):
-            print(text)
+			try:
+				print(text)
+			except UnicodeEncodeError as e:
+				print(e)
 
     # Check if we should log (for more advanced print statements)
     @staticmethod
