@@ -39,9 +39,12 @@ Thumbs.db
 
 # Project ignores
 /clan
+/clan_hdu
+/cust_users
 /export_html
 /export_json
 /export_text
+/export_hdu
 /files
 /images
 /info
@@ -49,3 +52,8 @@ Thumbs.db
 
 src/slack_data.py
 Phrases to check.txt
+Get stats.bat
+Convert json.bat
+Get Avatars.bat
+Get stats - All.bat
+Pull files.bat

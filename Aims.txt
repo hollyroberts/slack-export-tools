@@ -18,6 +18,10 @@ Export
 	Current user avatars
 	Files
 
+Filter options
+	Date range
+	By username
+
 Debug
 	List of message types/subtypes
 	List of users (normal/bot)

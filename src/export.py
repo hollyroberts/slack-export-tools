@@ -268,6 +268,10 @@ class export():
         body_str = ""
         ret_str = ""
 
+        # Temp fix
+        if a is None:
+            return ""
+
         # Only process attachments that contain at least 1 supported field
         if not any(field in export.ATTACHMENT_FIELDS for field in a):
             return body_str
