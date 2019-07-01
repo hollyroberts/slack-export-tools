@@ -1,5 +1,6 @@
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Border, Font, Side
+from openpyxl.utils import get_column_letter
 
 from src.slack import *
 
@@ -201,4 +202,4 @@ class stats():
                     pass
 
             adjusted_width = (max_length + 0.5) * 1.2
-            ws.column_dimensions[column].width = adjusted_width
+            ws.column_dimensions[get_column_letter(column)].width = adjusted_width
