@@ -43,8 +43,8 @@ class slackData():
             return False
         return True
 
-    def loadSlack(self):
-        print("Loading slack from '" + io.source_dir + "'")
+    def loadSlack(self, source_dir: str):
+        print("Loading slack from '" + source_dir + "'")
 
         # Load metadata
         self.metadata.loadSlack()

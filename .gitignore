@@ -48,6 +48,7 @@ Thumbs.db
 /files
 /images
 /info
+/message_extracts
 .idea
 
 src/slack_data.py

@@ -351,12 +351,7 @@ class export():
 
     def __improveMsgContents(self, msg: str, include_ampersand=True):
         # Make user and channel mentions readable
-        msg = self.__improveUserMentions(msg, include_ampersand)
-        msg = self.__improveChannelMentions(msg)
-
-        # Replace HTML encoded characters
-        for i in export.SLACK_HTML_ENCODING:
-            msg = msg.replace(i, export.SLACK_HTML_ENCODING[i])
+        msg = self.decodeMsg(msg)
 
         # Improve indentation (use spaces instead of tabs, I expect most people to view the data using a monospaced font)
         # At least this works for notepad and notepad++
@@ -364,7 +359,20 @@ class export():
 
         return msg
 
-    def __improveChannelMentions(self, msg: str):
+    def decodeMsg(self, msg, include_ampersand=True):
+        msg = self.improveUserMentions(msg, include_ampersand)
+        msg = self.improveChannelMentions(msg)
+        msg = self.decodeHTML(msg)
+
+        return msg
+
+    def decodeHTML(self, msg: str):
+        for i in export.SLACK_HTML_ENCODING:
+            msg = msg.replace(i, export.SLACK_HTML_ENCODING[i])
+
+        return msg
+
+    def improveChannelMentions(self, msg: str):
         # Use regex to find channel mentions
         # Format 1, no pipe
         mentions = re.finditer('<#C([^|>]+)>', msg)
@@ -391,7 +399,7 @@ class export():
 
         return msg
 
-    def __improveUserMentions(self, msg: str, include_ampersand=True):
+    def improveUserMentions(self, msg: str, include_ampersand=True):
         # Use regex to find user mentions
         # Format 1, no pipe
         mentions = re.finditer('<@U([^|>]+)>', msg)

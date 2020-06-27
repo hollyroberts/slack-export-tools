@@ -224,7 +224,7 @@ def setAvatarMode():
 loadArgs()
 
 slack = slackData()
-slack.loadSlack()
+slack.loadSlack(io.source_dir)
 if date_start is not None or date_end is not None:
     slack.filter(date_start, date_end)
 
