@@ -22,7 +22,8 @@ class stats():
                           'me_message',
                           'file_comment',
                           'file_mention',
-                          'file_share')
+                          'file_share',
+                          'thread_broadcast')
 
     # Default stats mode
     mode = statsModes.MEDIUM
