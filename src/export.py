@@ -100,6 +100,9 @@ class export():
         # Build and return data
         formatted_data = []
         for msg in raw_json:
+            if 'ts' not in msg:
+                continue
+
             # Do not process thread child messages, they will either be processed by reply_broadcast or the parent message
             if not ('thread_ts' in msg and msg['thread_ts'] != msg['ts']) or process_children:
                 formatted_data.append(self.__formatMsgJSON(msg))
@@ -128,6 +131,10 @@ class export():
         thread = []
         for child in parent['replies']:
             child_ts = child['ts']
+            if child_ts not in self.slack.channel_threads[self.__currentChannel]:
+                print(f"Warning: Could not find child_ts '{child_ts}' in channel '{self.__currentChannel}'")
+                break
+
             child_msg = self.slack.channel_threads[self.__currentChannel][child_ts]
             thread.append(child_msg)
 

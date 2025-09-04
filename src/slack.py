@@ -34,6 +34,10 @@ class slackData():
             self.channel_threads[c] = self.__loadChannelThreads(self.channel_data[c])
 
     def includeMsgTS(self, msg, ds, de):
+        if 'ts' not in msg:
+            log.log(logModes.HIGH, "No timestamp found for message, skipping")
+            return False
+
         timestamp = msg['ts']
         dt = datetime.datetime.fromtimestamp(float(timestamp))
 
